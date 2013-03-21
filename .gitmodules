@@ -1,0 +1,3 @@
+[submodule "molecule"]
+	path = molecule
+	url = git://git.sabayon.org/projects/molecule-core.git
