@@ -47,6 +47,7 @@ class UbuildSpecTest(unittest.TestCase):
         tmp_fd, tmp_path = None, None
         try:
             tmp_fd, tmp_path = tempfile.mkstemp(prefix="ubuild.test")
+            os.chmod(tmp_path, 0o700)
 
             income = """\
 tarball.tar.xz foo,
@@ -73,9 +74,9 @@ tarball.tar.xz,
                     },
                 ]
 
-            out = meta["ve"](income)
+            out = meta["parser"](income)
             self.assertEqual(expected_outcome, out)
-            self.assertEqual(meta["cb"](out), True)
+            self.assertEqual(meta["verifier"](out), True)
 
         finally:
             if tmp_fd is not None:
@@ -87,8 +88,8 @@ tarball.tar.xz,
         """
         Simple test to assert a correct cross_build_pkg arguments evaluation.
         """
-        spec = self._ubuild.UbuildSpec()
-        data_path = spec.parser_data_path()
+        spec = self._ubuild.UbuildSpec("")
+        data_path = spec.parameters()
         meta = data_path["cross_build_pkg"]
         self._testBuildPkg(meta)
 
@@ -96,8 +97,8 @@ tarball.tar.xz,
         """
         Simple test to assert a correct build_pkg arguments evaluation.
         """
-        spec = self._ubuild.UbuildSpec()
-        data_path = spec.parser_data_path()
+        spec = self._ubuild.UbuildSpec("")
+        data_path = spec.parameters()
         meta = data_path["build_pkg"]
         self._testBuildPkg(meta)
 
@@ -108,6 +109,7 @@ tarball.tar.xz,
         tmp_fd, tmp_path = None, None
         try:
             tmp_fd, tmp_path = tempfile.mkstemp(prefix="ubuild.test")
+            os.chmod(tmp_path, 0o700)
 
             income = """\
 tarball.tar.xz bar,
@@ -130,9 +132,9 @@ tarball.tar.xz "!this does not exist",
                     },
                 ]
 
-            out = meta["ve"](income)
+            out = meta["parser"](income)
             self.assertEqual(expected_outcome, out)
-            self.assertEqual(meta["cb"](out), True)
+            self.assertEqual(meta["verifier"](out), True)
 
         finally:
             if tmp_fd is not None:
@@ -144,8 +146,8 @@ tarball.tar.xz "!this does not exist",
         """
         Simple test to assert a correct cross_patch_pkg arguments evaluation.
         """
-        spec = self._ubuild.UbuildSpec()
-        data_path = spec.parser_data_path()
+        spec = self._ubuild.UbuildSpec("")
+        data_path = spec.parameters()
         meta = data_path["cross_patch_pkg"]
         self._testPatchPkg(meta)
 
@@ -153,8 +155,8 @@ tarball.tar.xz "!this does not exist",
         """
         Simple test to assert a correct patch_pkg arguments evaluation.
         """
-        spec = self._ubuild.UbuildSpec()
-        data_path = spec.parser_data_path()
+        spec = self._ubuild.UbuildSpec("")
+        data_path = spec.parameters()
         meta = data_path["patch_pkg"]
         self._testPatchPkg(meta)
 

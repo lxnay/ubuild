@@ -1,0 +1,10 @@
+#!/bin/sh
+
+ARCH="arm"
+ABI="gnueabi"
+MAKEOPTS="-j 3"
+CTARGET="${ARCH}-unknown-linux-${ABI}"
+
+CFLAGS="-O2 -pipe"
+CXXFLAGS="${CXXFLAGS}"
+LDFLAGS="-Wl,-O1 -Wl,--as-needed"
