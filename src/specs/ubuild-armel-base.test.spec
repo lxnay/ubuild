@@ -36,8 +36,9 @@ cross_pre_build: scripts/cross_pre_build.sh armel
 
 cross_post_build: scripts/cross_post_build.sh armel
 
+build_image: scripts/build_image.sh armel
+
 # TODO, add:
 # - {build,patch}_pkg
 # - pre_build
 # - post_build
-# - build_image

@@ -5,6 +5,10 @@ ABI="gnueabi"
 MAKEOPTS="-j 3"
 CTARGET="${ARCH}-unknown-linux-${ABI}"
 
+export ARCH ABI MAKEOPTS CTARGET
+
 CFLAGS="-O2 -pipe"
 CXXFLAGS="${CXXFLAGS}"
 LDFLAGS="-Wl,-O1 -Wl,--as-needed"
+
+export CFLAGS CXXFLAGS LDFLAGS
