@@ -205,7 +205,8 @@ class UbuildSpec(GenericSpec):
                 return path
 
             base_dir = os.path.dirname(self._spec_file)
-            return os.path.normpath(os.path.join(base_dir, path))
+            return os.path.abspath(
+                os.path.normpath(os.path.join(base_dir, path)))
 
         def directory_verifier(param_name, value):
             """
