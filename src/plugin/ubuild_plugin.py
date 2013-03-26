@@ -744,6 +744,10 @@ class CrossToolchainHandler(BaseHandler):
                 self._logger.debug("Setting UBUILD_PATCHES='%s'", patches_str)
                 env["UBUILD_PATCHES"] = patches_str
 
+            self._logger.debug(
+                "Setting UBUILD_TARBALL_NAME='%s'", tarball)
+            env["UBUILD_TARBALL_NAME"] = tarball
+
             cache_file = None
             if self._cacher:
                 cache_file = self._cacher.lookup(
@@ -762,9 +766,8 @@ class CrossToolchainHandler(BaseHandler):
                     return exit_st
 
             else:
-                args = (script, tarball)
                 script_dir = os.path.dirname(script)
-                exit_st = subprocess.call(args, env=env, cwd=script_dir)
+                exit_st = subprocess.call((script,), env=env, cwd=script_dir)
 
                 log_func = self._logger.info
                 if exit_st != 0:
