@@ -1,0 +1,165 @@
+#!/bin/bash
+
+set -e
+
+# @DESCRIPTION: fetch the source tarball saving it to ${ARCHIVE}
+# @USAGE: build_src_fetch
+build_src_fetch() {
+    if [ ! -f "${ARCHIVE}" ]; then
+        echo "Starting to download ${ARCHIVE}"
+        wget "${SRC_URI}" -O "${ARCHIVE}" || return 1
+    else
+        local sha1=$(sha1sum "${ARCHIVE}")
+        echo "${ARCHIVE} already there, SHA1: ${sha1}"
+    fi
+}
+
+# @DESCRIPTION: unpack the downloaded tarball (${ARCHIVE})
+# into ${WORKDIR}.
+# @USAGE: build_src_unpack
+build_src_unpack() {
+    tar -x -a -f "${ARCHIVE}" -C "${WORKDIR}"
+}
+
+# @DESCRIPTION: apply patches declared in ${UBUILD_PATCHES}
+# @USAGE: _build_src_patch
+_build_src_patch() {
+    if [ -n "${UBUILD_PATCHES}" ]; then
+        for p in ${UBUILD_PATCHES}; do
+
+            echo "Applying patch: ${p}"
+            local level=
+            local good=
+            for level in $(seq 0 5); do
+                patch --quiet -p${level} --dry-run -f < "${p}" \
+                    2>&1 > "${BUILD_LOG}" && {
+                    good=1;
+                    break;
+                }
+            done
+            if [ "${good}" != "1" ]; then
+                echo "Cannot apply patch ${p}" >&2
+                return 1
+            else
+                patch --quiet -p${level} -f < "${p}"
+            fi
+
+        done
+    fi
+}
+
+# @DESCRIPTION: prepare the sources directory by creating ${T}
+# and ${BUILD_DIR} and calls build_src_patch
+# @USAGE: build_src_prepare
+build_src_prepare() {
+    mkdir -p "${T}"
+    mkdir -p "${BUILD_DIR}"
+    cd "${S}"
+    _build_src_patch
+}
+
+# @DESCRIPTION: call ./configure from inside ${BUILD_DIR}
+# @USAGE: build_src_configure [configure args]
+build_src_configure() {
+    cd "${BUILD_DIR}"
+    "${S}/configure" "${@}"
+}
+
+# @DESCRIPTION: call make ${MAKEOPTS} from inside ${BUILD_DIR}
+# @USAGE: build_src_compile
+build_src_compile() {
+    cd "${BUILD_DIR}"
+    make ${MAKEOPTS}
+}
+
+# @DESCRIPTION: call make ${MAKEOPTS} DESTDIR=${TARGET_DIR} install
+# from inside ${BUILD_DIR}
+# @USAGE: build_src_install
+build_src_install() {
+    cd "${BUILD_DIR}"
+    make ${MAKEOPTS} DESTDIR="${TARGET_DIR}" install
+}
+
+# @DESCRIPTION: merge the content installed by build_src_install into
+# UBUILD_IMAGE_DIR/<pkgname> as part of the ubuild build cache implementation
+# The content of UBUILD_IMAGE_DIR/<pkgname> will be then unpacked into
+# ${ŦARGET_DIR} (which is just ${UBUILD_BUILD_DIR}/<pkgname> and it's where
+# build_src_install installs the built data).
+# @USAGE: build_pkg_merge
+build_pkg_merge() {
+    rsync -avx -H -A "${TARGET_DIR}"/ "${IMAGE_TARGET_DIR}"/
+}
+
+
+# Export all the public functions without the build_* prefix.
+for _func in $(compgen -A function); do
+    if [ -n "$(echo ${_func} | grep ^build_)" ]; then
+        _fun_name=$(echo ${_func} | sed "s:build_::")
+        eval "${_fun_name}() { ${_func}; };"
+    fi
+done
+
+
+# @DESCRIPTION: main function, to be called by build scripts sourcing this
+# file. It will call all the following build phases in order:
+# - src_fetch: download the sources
+# - src_unpack: unpack the sources
+# - src_prepare: prepare the sources (eg. apply patches)
+# - src_configure: configure the sources
+# - src_compile: compile the sources
+# - src_install: install the sources
+# - pkg_merge: merge the sources into UBUILD_IMAGE_DIR/<PN>
+# If any of these functions is not defined, main() will default to the
+# built-in build_<phase>.
+# @USAGE: main <PN>
+main() {
+    PN="${1}"
+    if [ -z "${PN}" ]; then
+        echo "Usage: ${0} <PN>" >&2
+        return 1
+    fi
+
+    WORKDIR=$(TMPDIR="${UBUILD_BUILD_DIR}" mktemp -d)
+    if [ ! -d "${WORKDIR}" ]; then
+        echo "Cannot create a temporary build dir ${WORKDIR}" >&2
+        exit 1
+    fi
+
+    TARBALL_NAME="${UBUILD_TARBALL_NAME}"
+    ARCHIVE="${UBUILD_SOURCES_DIR}/${TARBALL_NAME}"
+    SRC_URI="http://ftp.gnu.org/gnu/gmp/${TARBALL_NAME}"
+    P="${TARBALL_NAME/.tar*}"
+    S="${WORKDIR}/${P}"
+    BUILD_DIR="${WORKDIR}/build"
+    T="${WORKDIR}/temp"
+    TARGET_DIR="${UBUILD_BUILD_DIR}/${PN}"
+    IMAGE_TARGET_DIR="${UBUILD_IMAGE_DIR}/${PN}"
+    BUILD_LOG="${T}/build.log"
+
+    export TMPDIR="${T}"
+    echo
+    echo "Ubuild environment variables:"
+    echo "UBUILD_BUILD_DIR: ${UBUILD_BUILD_DIR}"
+    echo "UBUILD_IMAGE_DIR: ${UBUILD_IMAGE_DIR}"
+    echo "UBUILD_SOURCES_DIR: ${UBUILD_SOURCES_DIR}"
+    echo "UBUILD_PATCHES: ${UBUILD_PATCHES}"
+    echo
+    echo "Local variables:"
+    echo "TARBALL_NAME: ${TARBALL_NAME}"
+    echo "ARCHIVE: ${ARCHIVE}"
+    echo "WORKDIR: ${WORKDIR}"
+    echo "BUILD_DIR: ${BUILD_DIR}"
+    echo "P: ${P}"
+    echo "PN: ${PN}"
+    echo "S: ${S}"
+    echo "BUILD_LOG: ${BUILD_LOG}"
+    echo
+
+    src_fetch
+    src_unpack
+    src_prepare
+    src_configure
+    src_compile
+    src_install
+    pkg_merge
+}
