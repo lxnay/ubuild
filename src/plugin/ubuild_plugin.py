@@ -589,6 +589,12 @@ class BaseHandler(GenericExecutionStep):
         Source the environment file and build a dict containing
         the environment variables set by it.
         Return None if environment file cannot be sourced.
+
+        Args:
+          env_file: the environment file to source.
+
+        Returns:
+          an environment dict.
         """
         env_sourcer = os.path.join(
             os.path.dirname(__file__),
