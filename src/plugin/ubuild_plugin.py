@@ -756,7 +756,8 @@ class CrossToolchainHandler(BaseHandler):
 
             else:
                 args = (script, tarball)
-                exit_st = subprocess.call(args, env=env)
+                script_dir = os.path.dirname(script)
+                exit_st = subprocess.call(args, env=env, cwd=script_dir)
 
                 log_func = self._logger.info
                 if exit_st != 0:
