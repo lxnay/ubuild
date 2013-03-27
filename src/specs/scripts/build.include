@@ -70,18 +70,16 @@ build_src_configure() {
 }
 
 # @DESCRIPTION: call make ${MAKEOPTS} from inside ${BUILD_DIR}
-# @USAGE: build_src_compile
+# @USAGE: build_src_compile [make args]
 build_src_compile() {
-    cd "${BUILD_DIR}"
-    make ${MAKEOPTS}
+    bmake "${@}"
 }
 
 # @DESCRIPTION: call make ${MAKEOPTS} DESTDIR=${TARGET_DIR} install
 # from inside ${BUILD_DIR}
-# @USAGE: build_src_install
+# @USAGE: build_src_install [make args]
 build_src_install() {
-    cd "${BUILD_DIR}"
-    make ${MAKEOPTS} DESTDIR="${TARGET_DIR}" install
+    bmake DESTDIR="${TARGET_DIR}" "${@}" install
 }
 
 # @DESCRIPTION: merge the content installed by build_src_install into
@@ -103,6 +101,12 @@ for _func in $(compgen -A function); do
     fi
 done
 
+# @DESCRIPTION: make wrapper that takes into account ${MAKEOPTS}
+# @USAGE: bmake [make args]
+bmake() {
+    cd "${BUILD_DIR}"
+    make ${MAKEOPTS} "${@}"
+}
 
 # @DESCRIPTION: main function, to be called by build scripts sourcing this
 # file. It will call all the following build phases in order:
