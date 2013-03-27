@@ -125,10 +125,8 @@ main() {
         exit 1
     fi
 
-    TARBALL_NAME="${UBUILD_TARBALL_NAME}"
-    ARCHIVE="${UBUILD_SOURCES_DIR}/${TARBALL_NAME}"
-    SRC_URI="http://ftp.gnu.org/gnu/gmp/${TARBALL_NAME}"
-    P="${TARBALL_NAME/.tar*}"
+    ARCHIVE="${UBUILD_SOURCES_DIR}/${UBUILD_TARBALL_NAME}"
+    P="${UBUILD_TARBALL_NAME/.tar*}"
     S="${WORKDIR}/${P}"
     BUILD_DIR="${WORKDIR}/build"
     T="${WORKDIR}/temp"
@@ -139,13 +137,14 @@ main() {
     export TMPDIR="${T}"
     echo
     echo "Ubuild environment variables:"
+    echo "UBUILD_TARBALL_NAME: ${UBUILD_TARBALL_NAME}"
     echo "UBUILD_BUILD_DIR: ${UBUILD_BUILD_DIR}"
     echo "UBUILD_IMAGE_DIR: ${UBUILD_IMAGE_DIR}"
     echo "UBUILD_SOURCES_DIR: ${UBUILD_SOURCES_DIR}"
     echo "UBUILD_PATCHES: ${UBUILD_PATCHES}"
     echo
     echo "Local variables:"
-    echo "TARBALL_NAME: ${TARBALL_NAME}"
+    echo "SRC_URI: ${SRC_URI}"
     echo "ARCHIVE: ${ARCHIVE}"
     echo "WORKDIR: ${WORKDIR}"
     echo "BUILD_DIR: ${BUILD_DIR}"
