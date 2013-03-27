@@ -664,6 +664,20 @@ class CrossToolchainHandler(BaseHandler):
         """
         Overridden from GenericExecutionStep.
         """
+        build_dir = self.metadata["build_dir"]
+        if os.path.isdir(build_dir):
+            self._logger.info(
+                "[%s] cleaning build_dir %s",
+                self.spec_name, build_dir)
+            try:
+                dir_cont = os.listdir(build_dir)
+            except OSError:
+                self._logger.exception("cannot list build_dir content")
+                return 1
+
+            for sub in dir_cont:
+                path = os.path.join(build_dir, sub)
+                shutil.rmtree(path, True)
         return 0
 
     def pre_run(self):
@@ -717,15 +731,6 @@ class CrossToolchainHandler(BaseHandler):
             env_file = build_pkg["env_file"]
             patches = patches_map.get(tarball, [])
 
-            try:
-                image_dir = tempfile.mkdtemp(
-                    dir=self.metadata["build_dir"],
-                    prefix=".ubuild_image.")
-            except (OSError, IOError):
-                self._logger.exception(
-                    "CrossToolchainHandler: cannot create image_dir")
-                return 1
-
             self._logger.info(
                 "[%s] building: %s", self.spec_name, tarball)
             self._logger.info("  build script: %s", script)
@@ -736,8 +741,6 @@ class CrossToolchainHandler(BaseHandler):
             base_env.update(file_env)
 
             env = self._setup_environment(base_env)
-            self._logger.debug("Setting UBUILD_IMAGE_DIR=%s", image_dir)
-            env["UBUILD_IMAGE_DIR"] = image_dir
 
             patches_str = " ".join(patches)
             if patches_str:
@@ -766,40 +769,59 @@ class CrossToolchainHandler(BaseHandler):
                     return exit_st
 
             else:
-                script_dir = os.path.dirname(script)
-                exit_st = subprocess.call((script,), env=env, cwd=script_dir)
 
-                log_func = self._logger.info
-                if exit_st != 0:
-                    log_func = self._logger.error
-                log_func("[%s] exit status: %d", self.spec_name, exit_st)
-                if exit_st != 0:
-                    return exit_st
-
-                if self._cacher:
-
-                    # ensure that the build script has moved the content
-                    # to UBUILD_IMAGE_DIR.
+                image_dir = None
+                try:
                     try:
-                        content = os.listdir(image_dir)
+                        image_dir = tempfile.mkdtemp(
+                            dir=self.metadata["build_dir"],
+                            prefix=".ubuild_image.")
                     except (OSError, IOError):
                         self._logger.exception(
-                            "Cannot get content of %s", image_dir)
-                        content = None
-                    if not content:
-                        self._logger.error(
-                            "[%s] %s built files have not been "
-                            "moved to UBUILD_IMAGE_DIR, script: %s",
-                            self.spec_name, tarball, script)
+                            "CrossToolchainHandler: cannot create image_dir")
                         return 1
 
-                    exit_st = self._cacher.pack(
-                        image_dir, tarball, patches, env)
+                    self._logger.debug("Setting UBUILD_IMAGE_DIR=%s", image_dir)
+                    env["UBUILD_IMAGE_DIR"] = image_dir
+
+                    script_dir = os.path.dirname(script)
+                    exit_st = subprocess.call(
+                        (script,), env=env, cwd=script_dir)
+
+                    log_func = self._logger.info
                     if exit_st != 0:
-                        self._logger.error(
-                            "[%s] pack of %s failed with exit status: %d",
-                            self.spec_name, tarball, exit_st)
-                        # ignore failure.
+                        log_func = self._logger.error
+                    log_func("[%s] exit status: %d", self.spec_name, exit_st)
+                    if exit_st != 0:
+                        return exit_st
+
+                    if self._cacher:
+
+                        # ensure that the build script has moved the content
+                        # to UBUILD_IMAGE_DIR.
+                        try:
+                            content = os.listdir(image_dir)
+                        except (OSError, IOError):
+                            self._logger.exception(
+                                "Cannot get content of %s", image_dir)
+                            content = None
+                        if not content:
+                            self._logger.error(
+                                "[%s] %s built files have not been "
+                                "moved to UBUILD_IMAGE_DIR, script: %s",
+                                self.spec_name, tarball, script)
+                            return 1
+
+                        exit_st = self._cacher.pack(
+                            image_dir, tarball, patches, env)
+                        if exit_st != 0:
+                            self._logger.error(
+                                "[%s] pack of %s failed with exit status: %d",
+                                self.spec_name, tarball, exit_st)
+                            # ignore failure.
+                finally:
+                    if image_dir is not None:
+                        shutil.rmtree(image_dir, True)
 
             self._logger.info("")
 
