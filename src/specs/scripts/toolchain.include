@@ -4,18 +4,30 @@
 # to build and run a cross compiler.
 
 
+set -e
+
 # @DESCRIPTION: configure the build time and runtime environment
 # of the cross compiler.
 # @USAGE: cross_setup_environment
 cross_setup_environment() {
     if [ -z "${_CROSS_SETUP_ENVIRONMENT}" ]; then
-        local path="${UBUILD_BUILD_DIR}/binutils/usr/bin"
         local libpath=
         for pkg in "gmp" "mpfr" "mpc"; do
-            libpath="${UBUILD_BUILD_DIR}/${pkg}/usr/lib:${libpath}"
+            if [ -n "${libpath}" ]; then
+                libpath="${UBUILD_BUILD_DIR}/${pkg}/usr/lib:${libpath}"
+            else
+                libpath="${UBUILD_BUILD_DIR}/${pkg}/usr/lib"
+            fi
         done
-        export PATH="${path}:${PATH}"
         export LD_LIBRARY_PATH="${libpath}"
+
+        local path=
+        for pkg in "binutils" "gcc-stage1"; do
+            local path="${UBUILD_BUILD_DIR}/${pkg}/usr/bin:${path}"
+        done
+        # add binutils /usr/CTARGET/bin to PATH as well, or gcc won't work
+        path="${UBUILD_BUILD_DIR}/binutils/usr/${CTARGET}/bin:${path}"
+        export PATH="${path}:${PATH}"
 
         _CROSS_SETUP_ENVIRONMENT=1
     fi

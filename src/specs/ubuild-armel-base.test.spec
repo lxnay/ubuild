@@ -29,6 +29,8 @@ cross_build_pkg:
     binutils-2.23.1.tar.gz scripts/cross_build_binutils.sh scripts/armel/cross_build_env,
     gcc-4.7.2.tar.bz2 scripts/cross_build_gcc-stage1.sh scripts/armel/cross_build_env,
     linux-3.7.10.tar.xz scripts/cross_build_linux-headers.sh scripts/armel/cross_build_env,
+    glibc-ports-2.16.0.tar.xz scripts/cross_build_glibc-ports.sh scripts/armel/cross_build_env,
+    glibc-2.16.0.tar.xz scripts/cross_build_glibc.sh scripts/armel/cross_build_env,
 
 
 cross_patch_pkg:
