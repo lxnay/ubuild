@@ -23,7 +23,10 @@ sources_dir: sources/
 rootfs_dir: rootfs/
 
 cross_build_pkg:
-    gmp-4.3.2.tar.bz2 scripts/cross_build_gmp.sh scripts/armel/cross_build_env
+    gmp-4.3.2.tar.bz2 scripts/cross_build_gmp.sh scripts/armel/cross_build_env,
+    mpfr-2.4.2.tar.bz2 scripts/cross_build_mpfr.sh scripts/armel/cross_build_env,
+    mpc-0.8.1.tar.gz scripts/cross_build_mpc.sh scripts/armel/cross_build_env,
+    binutils-2.23.1.tar.gz scripts/cross_build_binutils.sh scripts/armel/cross_build_env,
 
 cross_patch_pkg:
     gmp-4.3.2.tar.bz2 patches/gmp-4.3.2-ABI-multilib.patch

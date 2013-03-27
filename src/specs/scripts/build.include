@@ -7,7 +7,10 @@ set -e
 build_src_fetch() {
     if [ ! -f "${ARCHIVE}" ]; then
         echo "Starting to download ${ARCHIVE}"
-        wget "${SRC_URI}" -O "${ARCHIVE}" || return 1
+        wget "${SRC_URI}" -O "${ARCHIVE}" || {
+            rm -f "${ARCHIVE}";
+            return 1;
+        }
     else
         local sha1=$(sha1sum "${ARCHIVE}")
         echo "${ARCHIVE} already there, SHA1: ${sha1}"
@@ -62,6 +65,7 @@ build_src_prepare() {
 # @USAGE: build_src_configure [configure args]
 build_src_configure() {
     cd "${BUILD_DIR}"
+    echo "Calling configure with: ${@}"
     "${S}/configure" "${@}"
 }
 
@@ -119,7 +123,8 @@ main() {
         return 1
     fi
 
-    WORKDIR=$(TMPDIR="${UBUILD_BUILD_DIR}" mktemp -d)
+    WORKDIR=$(TMPDIR="${UBUILD_BUILD_DIR}" mktemp -d \
+        --suffix="${UBUILD_TARBALL_NAME}")
     if [ ! -d "${WORKDIR}" ]; then
         echo "Cannot create a temporary build dir ${WORKDIR}" >&2
         exit 1
@@ -137,10 +142,11 @@ main() {
     export TMPDIR="${T}"
     echo
     echo "Ubuild environment variables:"
-    echo "UBUILD_TARBALL_NAME: ${UBUILD_TARBALL_NAME}"
     echo "UBUILD_BUILD_DIR: ${UBUILD_BUILD_DIR}"
     echo "UBUILD_IMAGE_DIR: ${UBUILD_IMAGE_DIR}"
     echo "UBUILD_SOURCES_DIR: ${UBUILD_SOURCES_DIR}"
+    echo "UBUILD_ROOTFS_DIR: ${UBUILD_ROOTFS_DIR}"
+    echo "UBUILD_TARBALL_NAME: ${UBUILD_TARBALL_NAME}"
     echo "UBUILD_PATCHES: ${UBUILD_PATCHES}"
     echo
     echo "Local variables:"
@@ -154,11 +160,24 @@ main() {
     echo "BUILD_LOG: ${BUILD_LOG}"
     echo
 
-    src_fetch
-    src_unpack
-    src_prepare
-    src_configure
-    src_compile
-    src_install
-    pkg_merge
+    src_fetch && \
+        src_unpack && \
+        src_prepare && \
+        src_configure && \
+        src_compile && \
+        src_install && \
+        pkg_merge
+    exit_st=${?}
+
+    if [ "${exit_st}" = "0" ]; then
+        rm -rf "${WORKDIR}"
+        return 0
+    else
+        echo
+        echo "Build failure of ${UBUILD_TARBALL_NAME}" >&2
+        echo "The work directory is: ${WORKDIR}" >&2
+        echo "Have fun." >&2
+        echo
+        return ${exit_st}
+    fi
 }

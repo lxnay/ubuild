@@ -1,14 +1,14 @@
 #!/bin/sh
 
+# These are needed by GCC
 ARCH="arm"
 ABI="gnueabi"
-MAKEOPTS="-j 3"
 CTARGET="${ARCH}-unknown-linux-${ABI}"
+export ARCH ABI CTARGET
 
-export ARCH ABI MAKEOPTS CTARGET
-
+MAKEOPTS="-j 3"
 CFLAGS="-O2 -pipe"
 CXXFLAGS="${CXXFLAGS}"
 LDFLAGS="-Wl,-O1 -Wl,--as-needed"
 
-export CFLAGS CXXFLAGS LDFLAGS
+export CFLAGS CXXFLAGS LDFLAGS MAKEOPTS

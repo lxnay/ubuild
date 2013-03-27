@@ -2,11 +2,13 @@
 
 . "$(dirname "${0}")/build.include"
 
-PN="gmp"
-SRC_URI="http://ftp.gnu.org/gnu/${PN}/${UBUILD_TARBALL_NAME}"
+PN="mpc"
+SRC_URI="ftp://gcc.gnu.org/pub/gcc/infrastructure/${UBUILD_TARBALL_NAME}"
 
 src_configure() {
-    build_src_configure --prefix="/usr" --enable-cxx
+    build_src_configure --prefix="/usr" --enable-shared \
+        --with-gmp="${UBUILD_BUILD_DIR}/gmp/usr" \
+        --with-mpfr="${UBUILD_BUILD_DIR}/mpfr/usr"
 }
 
 src_install() {
