@@ -12,3 +12,7 @@ CXXFLAGS="${CXXFLAGS}"
 LDFLAGS="-Wl,-O1 -Wl,--as-needed"
 
 export CFLAGS CXXFLAGS LDFLAGS MAKEOPTS
+
+# This is used as the in the works root filesystem directory
+SYSROOT="${UBUILD_BUILD_DIR}/rootfs"
+export SYSROOT

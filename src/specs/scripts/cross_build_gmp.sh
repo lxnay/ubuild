@@ -1,6 +1,6 @@
 #!/bin/bash
 
-. "$(dirname "${0}")/build.include"
+. build.include
 
 PN="gmp"
 SRC_URI="http://ftp.gnu.org/gnu/${PN}/${UBUILD_TARBALL_NAME}"

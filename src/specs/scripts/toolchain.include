@@ -1,0 +1,22 @@
+#!/bin/bash
+#
+# This include file contains helper functions that can be used
+# to build and run a cross compiler.
+
+
+# @DESCRIPTION: configure the build time and runtime environment
+# of the cross compiler.
+# @USAGE: cross_setup_environment
+cross_setup_environment() {
+    if [ -z "${_CROSS_SETUP_ENVIRONMENT}" ]; then
+        local path="${UBUILD_BUILD_DIR}/binutils/usr/bin"
+        local libpath=
+        for pkg in "gmp" "mpfr" "mpc"; do
+            libpath="${UBUILD_BUILD_DIR}/${pkg}/usr/lib:${libpath}"
+        done
+        export PATH="${path}:${PATH}"
+        export LD_LIBRARY_PATH="${libpath}"
+
+        _CROSS_SETUP_ENVIRONMENT=1
+    fi
+}

@@ -27,13 +27,16 @@ cross_build_pkg:
     mpfr-2.4.2.tar.bz2 scripts/cross_build_mpfr.sh scripts/armel/cross_build_env,
     mpc-0.8.1.tar.gz scripts/cross_build_mpc.sh scripts/armel/cross_build_env,
     binutils-2.23.1.tar.gz scripts/cross_build_binutils.sh scripts/armel/cross_build_env,
+    gcc-4.7.2.tar.bz2 scripts/cross_build_gcc-stage1.sh scripts/armel/cross_build_env,
+    linux-3.7.10.tar.xz scripts/cross_build_linux-headers.sh scripts/armel/cross_build_env,
+
 
 cross_patch_pkg:
     gmp-4.3.2.tar.bz2 patches/gmp-4.3.2-ABI-multilib.patch
 
 cache_variables:
     CFLAGS, CPPFLAGS, CXXFLAGS, LDFLAGS,
-    ARCH, ABI, GMPABI, MAKEOPTS
+    ARCH, ABI, GMPABI, MAKEOPTS, SYSROOT
 
 cross_pre_build: scripts/cross_pre_build.sh armel
 

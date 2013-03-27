@@ -1,6 +1,6 @@
 #!/bin/bash
 
-. "$(dirname "${0}")/build.include"
+. build.include
 
 PN="mpc"
 SRC_URI="ftp://gcc.gnu.org/pub/gcc/infrastructure/${UBUILD_TARBALL_NAME}"
