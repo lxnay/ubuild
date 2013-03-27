@@ -694,8 +694,9 @@ class CrossToolchainHandler(BaseHandler):
             " ".join(args)
             )
 
+        script_dir = os.path.dirname(args[0])
         env = self._setup_environment(self._base_env)
-        exit_st = subprocess.call(args, env=env)
+        exit_st = subprocess.call(args, env=env, cwd=script_dir)
 
         log_func = self._logger.info
         if exit_st != 0:
@@ -841,8 +842,9 @@ class CrossToolchainHandler(BaseHandler):
             " ".join(args)
             )
 
+        script_dir = os.path.dirname(args[0])
         env = self._setup_environment(self._base_env)
-        exit_st = subprocess.call(args, env=env)
+        exit_st = subprocess.call(args, env=env, cwd=script_dir)
 
         log_func = self._logger.info
         if exit_st != 0:
