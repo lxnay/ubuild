@@ -31,6 +31,7 @@ cross_build_pkg:
     linux-3.7.10.tar.xz scripts/cross_build_linux-headers.sh scripts/armel/cross_build_env,
     glibc-ports-2.16.0.tar.xz scripts/cross_build_glibc-ports.sh scripts/armel/cross_build_env,
     glibc-2.16.0.tar.xz scripts/cross_build_glibc.sh scripts/armel/cross_build_env,
+    gcc-4.7.2.tar.bz2 scripts/cross_build_gcc-stage2.sh scripts/armel/cross_build_env,
 
 
 cross_patch_pkg:
@@ -38,7 +39,8 @@ cross_patch_pkg:
 
 cache_variables:
     CFLAGS, CPPFLAGS, CXXFLAGS, LDFLAGS,
-    ARCH, ABI, GMPABI, MAKEOPTS, SYSROOT
+    ARCH, ABI, GMPABI, MAKEOPTS, CROSS_SYSROOT,
+    WORK_ROOTFS_DIR
 
 cross_pre_build: scripts/cross_pre_build.sh armel
 

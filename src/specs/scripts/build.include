@@ -1,6 +1,8 @@
 #!/bin/bash
 
-set -e
+# @DESCRIPTION: directory used as the in the works root filesystem directory
+WORK_ROOTFS_DIR="${UBUILD_BUILD_DIR}/rootfs"
+
 
 # @DESCRIPTION: fetch the source tarball saving it to ${ARCHIVE}
 # @USAGE: build_src_fetch
@@ -44,7 +46,7 @@ _build_src_patch() {
                 echo "Cannot apply patch ${p}" >&2
                 return 1
             else
-                patch --quiet -p${level} -f < "${p}"
+                patch --quiet -p${level} -f < "${p}" || return 1
             fi
 
         done
@@ -55,16 +57,16 @@ _build_src_patch() {
 # and ${BUILD_DIR} and calls build_src_patch
 # @USAGE: build_src_prepare
 build_src_prepare() {
-    mkdir -p "${T}"
-    mkdir -p "${BUILD_DIR}"
-    cd "${S}"
+    mkdir -p "${T}" || return 1
+    mkdir -p "${BUILD_DIR}" || return 1
+    cd "${S}" || return 1
     _build_src_patch
 }
 
 # @DESCRIPTION: call ./configure from inside ${BUILD_DIR}
 # @USAGE: build_src_configure [configure args]
 build_src_configure() {
-    cd "${BUILD_DIR}"
+    cd "${BUILD_DIR}" || return 1
     echo "Calling configure with: ${@}"
     "${S}/configure" "${@}"
 }
@@ -104,7 +106,7 @@ done
 # @DESCRIPTION: make wrapper that takes into account ${MAKEOPTS}
 # @USAGE: bmake [make args]
 bmake() {
-    cd "${BUILD_DIR}"
+    cd "${BUILD_DIR}" || return 1
     make ${MAKEOPTS} "${@}"
 }
 

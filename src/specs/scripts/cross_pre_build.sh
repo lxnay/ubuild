@@ -9,9 +9,10 @@ if [ -z "${SUBDIR}" ]; then
 fi
 
 . "${SUBDIR}/cross_build_env"
+. build.include
 
-echo "Mirroring ${UBUILD_ROOTFS_DIR} into sysroot: ${SYSROOT}/"
+echo "Mirroring ${UBUILD_ROOTFS_DIR} into work rootfs dir: ${WORK_ROOTFS_DIR}/"
 
-mkdir -p "${SYSROOT}"
-/usr/bin/rsync -a -v -x -H -A -X --delete-during \
-    "${UBUILD_ROOTFS_DIR}"/ "${SYSROOT}"/
+mkdir -p "${WORK_ROOTFS_DIR}"
+/usr/bin/rsync -a -x -H -A -X --delete-during \
+    "${UBUILD_ROOTFS_DIR}"/ "${WORK_ROOTFS_DIR}"/
