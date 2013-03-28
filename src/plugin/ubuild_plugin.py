@@ -722,12 +722,13 @@ class CrossToolchainHandler(BaseHandler):
         # that has the tarball name as key and a list of patches as
         # value.
         patches_map = {}
-        for build_pkg in build_pkgs:
-            for patch_pkg in patch_pkgs:
+        for patch_pkg in patch_pkgs:
+            for build_pkg in build_pkgs:
                 if build_pkg["tarball"] == patch_pkg["tarball"]:
                     obj = patches_map.setdefault(build_pkg["tarball"], [])
                     patch = os.path.abspath(patch_pkg["patch"])
-                    obj.append(patch)
+                    if patch not in obj:
+                        obj.append(patch)
 
         for build_pkg in build_pkgs:
             tarball = build_pkg["tarball"]
