@@ -1,12 +1,14 @@
 #!/bin/bash
 
+set -e
+
 SUBDIR="${1}"
 if [ -z "${SUBDIR}" ]; then
-    echo "${0} <subdir containing cross_build_env>" >&2
+    echo "${0} <subdir containing env>" >&2
     exit 1
 fi
 
-. "${SUBDIR}/cross_build_env"
+. "${SUBDIR}/cross_env"
 
 . toolchain.include
 

@@ -3,7 +3,6 @@
 . build.include
 . toolchain.include
 
-PN="glibc"
 SRC_URI="http://ftp.gnu.org/gnu/${PN}/${UBUILD_TARBALL_NAME}"
 
 src_prepare() {
@@ -37,4 +36,4 @@ src_install() {
     cross_merge_target_dir_sysroot
 }
 
-main "${PN}"
+main

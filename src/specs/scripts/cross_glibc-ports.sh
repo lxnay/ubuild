@@ -3,7 +3,6 @@
 . build.include
 . toolchain.include
 
-PN="glibc-ports"
 SRC_URI="http://ftp.gnu.org/gnu/${PN/-ports}/${UBUILD_TARBALL_NAME}"
 
 src_prepare() {
@@ -24,4 +23,4 @@ src_install() {
     rsync -ax -H -A -X --delete-during "${S}"/ "${TARGET_DIR}"/ || return 1
 }
 
-main "${PN}"
+main

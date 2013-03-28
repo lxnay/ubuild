@@ -3,7 +3,6 @@
 . build.include
 . toolchain.include
 
-PN="linux-headers"
 SRC_URI="http://www.kernel.org/pub/linux/kernel/v3.x/${UBUILD_TARBALL_NAME}"
 
 src_configure() {
@@ -29,4 +28,4 @@ src_install() {
     cross_merge_target_dir_sysroot
 }
 
-main "${PN}"
+main

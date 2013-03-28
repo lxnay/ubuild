@@ -3,8 +3,7 @@
 . build.include
 . toolchain.include
 
-PN="mpfr"
-SRC_URI="http://ftp.gnu.org/gnu/${PN}/${UBUILD_TARBALL_NAME}"
+SRC_URI="ftp://gcc.gnu.org/pub/gcc/infrastructure/${UBUILD_TARBALL_NAME}"
 
 src_prepare() {
     cross_sysroot_init || return 1
@@ -13,7 +12,8 @@ src_prepare() {
 
 src_configure() {
     build_src_configure --prefix="/usr" --enable-shared \
-        --with-gmp="${UBUILD_BUILD_DIR}/gmp/usr"
+        --with-gmp="${UBUILD_BUILD_DIR}/gmp/usr" \
+        --with-mpfr="${UBUILD_BUILD_DIR}/mpfr/usr"
 }
 
 src_install() {
@@ -24,4 +24,4 @@ src_install() {
     cross_merge_target_dir_sysroot
 }
 
-main "${PN}"
+main

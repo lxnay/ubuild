@@ -3,8 +3,6 @@
 . build.include
 . toolchain.include
 
-
-PN="gcc-stage2"
 TN="${UBUILD_TARBALL_NAME}"
 SRC_URI="http://ftp.gnu.org/gnu/gcc/${TN%.tar*}/${TN}"
 
@@ -40,4 +38,4 @@ src_install() {
     cross_merge_target_dir_sysroot
 }
 
-main "${PN}"
+main

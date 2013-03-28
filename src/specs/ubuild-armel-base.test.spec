@@ -23,23 +23,23 @@ sources_dir: sources/
 rootfs_dir: rootfs/
 
 cross_build_pkg:
-    gmp-4.3.2.tar.bz2 scripts/cross_build_gmp.sh scripts/armel/cross_build_env,
-    mpfr-2.4.2.tar.bz2 scripts/cross_build_mpfr.sh scripts/armel/cross_build_env,
-    mpc-0.8.1.tar.gz scripts/cross_build_mpc.sh scripts/armel/cross_build_env,
-    binutils-2.23.1.tar.gz scripts/cross_build_binutils.sh scripts/armel/cross_build_env,
-    gcc-4.7.2.tar.bz2 scripts/cross_build_gcc-stage1.sh scripts/armel/cross_build_env,
-    linux-3.7.10.tar.xz scripts/cross_build_linux-headers.sh scripts/armel/cross_build_env,
-    glibc-ports-2.16.0.tar.xz scripts/cross_build_glibc-ports.sh scripts/armel/cross_build_env,
-    glibc-2.16.0.tar.xz scripts/cross_build_glibc-headers.sh scripts/armel/cross_build_env,
-    glibc-2.16.0.tar.xz scripts/cross_build_glibc.sh scripts/armel/cross_build_env,
-    gcc-4.7.2.tar.bz2 scripts/cross_build_gcc-stage2.sh scripts/armel/cross_build_env,
+    gmp gmp-4.3.2.tar.bz2 scripts/cross_gmp.sh scripts/armel/cross_env,
+    mpfr mpfr-2.4.2.tar.bz2 scripts/cross_mpfr.sh scripts/armel/cross_env,
+    mpc mpc-0.8.1.tar.gz scripts/cross_mpc.sh scripts/armel/cross_env,
+    binutils binutils-2.23.1.tar.gz scripts/cross_binutils.sh scripts/armel/cross_env,
+    gcc-stage1 gcc-4.7.2.tar.bz2 scripts/cross_gcc-stage1.sh scripts/armel/cross_env,
+    linux-headers linux-3.7.10.tar.xz scripts/cross_linux-headers.sh scripts/armel/cross_env,
+    glibc-ports glibc-ports-2.16.0.tar.xz scripts/cross_glibc-ports.sh scripts/armel/cross_env,
+    glibc-headers glibc-2.16.0.tar.xz scripts/cross_glibc-headers.sh scripts/armel/cross_env,
+    glibc glibc-2.16.0.tar.xz scripts/cross_glibc.sh scripts/armel/cross_env,
+    gcc gcc-4.7.2.tar.bz2 scripts/cross_gcc-stage2.sh scripts/armel/cross_env,
 
 
 cross_patch_pkg:
-    gmp-4.3.2.tar.bz2 patches/gmp-4.3.2-ABI-multilib.patch,
-    glibc-2.16.0.tar.xz patches/glibc-2.16-no-libgcc_s.patch,
-    glibc-ports-2.16.0.tar.xz patches/glibc-ports-2.16-no-libgcc_s.patch,
-    glibc-ports-2.16.0.tar.xz patches/glibc-ports-2.16-arm-specific-static-stubs.patch,
+    gmp patches/gmp-4.3.2-ABI-multilib.patch,
+    glibc patches/glibc-2.16-no-libgcc_s.patch,
+    glibc-ports patches/glibc-ports-2.16-no-libgcc_s.patch,
+    glibc-ports patches/glibc-ports-2.16-arm-specific-static-stubs.patch,
 
 cache_variables:
     CFLAGS, CPPFLAGS, CXXFLAGS, LDFLAGS,

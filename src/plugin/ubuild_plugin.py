@@ -94,6 +94,8 @@ class UbuildSpec(GenericSpec):
                 return True
             return False
 
+        pkg_splitter_cache = {}
+
         def build_pkg_splitter(param_name, value):
             """
             Generate the metadata from a {cross_,}build_pkg parameter.
@@ -103,14 +105,30 @@ class UbuildSpec(GenericSpec):
             if not items:
                 return outcome
 
+            cache = pkg_splitter_cache.setdefault(param_name, set())
+
             for item in items:
                 elems = shlex.split(item)
-                if len(elems) != 3:
+                if len(elems) != 4:
                     self._logger.warning(
                         "%s: invalid line: '%s'",
                         param_name, item)
                     continue
-                tarball, build_script, env_file = elems
+                target, tarball, build_script, env_file = elems
+
+                target = target.strip()
+                if not target:
+                    self._logger.warning(
+                        "%s: invalid target name '%s' (from: '%s')",
+                        param_name, target, item)
+                    continue
+
+                if target in cache:
+                    self._logger.warning(
+                        "%s: duplicate target name '%s' (from: '%s')",
+                        param_name, target, item)
+                    continue
+                cache.add(target)
 
                 build_script = path_parser(param_name, build_script)
                 if build_script is None:
@@ -137,6 +155,7 @@ class UbuildSpec(GenericSpec):
                     continue
 
                 outcome.append({
+                        "target": convert_to_unicode(target),
                         "tarball": convert_to_unicode(tarball),
                         "build_script": convert_to_unicode(build_script),
                         "env_file": convert_to_unicode(env_file),
@@ -168,7 +187,7 @@ class UbuildSpec(GenericSpec):
                         "%s: invalid line: '%s'",
                         param_name, item)
                     continue
-                tarball, patch = elems
+                target, patch = elems
 
                 patch = path_parser(param_name, patch)
                 if patch is None:
@@ -180,7 +199,7 @@ class UbuildSpec(GenericSpec):
                     continue
 
                 outcome.append({
-                        "tarball": convert_to_unicode(tarball),
+                        "target": convert_to_unicode(target),
                         "patch": convert_to_unicode(patch),
                         })
 
@@ -718,23 +737,30 @@ class CrossToolchainHandler(BaseHandler):
         patch_pkgs = self.metadata.get("cross_patch_pkg", [])
         build_pkgs = self.metadata.get("cross_build_pkg", [])
 
-        # From this O(m*n) mostruosity, generate a fast hash table
-        # that has the tarball name as key and a list of patches as
-        # value.
+        targets_map = {}
+        for build_pkg in build_pkgs:
+            targets_map[build_pkg["target"]] = build_pkg
+
         patches_map = {}
         for patch_pkg in patch_pkgs:
-            for build_pkg in build_pkgs:
-                if build_pkg["tarball"] == patch_pkg["tarball"]:
-                    obj = patches_map.setdefault(build_pkg["tarball"], [])
-                    patch = os.path.abspath(patch_pkg["patch"])
-                    if patch not in obj:
-                        obj.append(patch)
+            target = patch_pkg["target"]
+            build_pkg = targets_map.get(target)
+            if build_pkg is None:
+                self._logger.warning(
+                    "[%s] no build target for patch target: %s",
+                    self.spec_name, target)
+                continue
+
+            obj = patches_map.setdefault(target, [])
+            patch = os.path.abspath(patch_pkg["patch"])
+            obj.append(patch)
 
         for build_pkg in build_pkgs:
+            target = build_pkg["target"]
             tarball = build_pkg["tarball"]
             script = build_pkg["build_script"]
             env_file = build_pkg["env_file"]
-            patches = patches_map.get(tarball, [])
+            patches = patches_map.get(target, [])
 
             self._logger.info(
                 "[%s] building: %s", self.spec_name, tarball)
@@ -755,6 +781,10 @@ class CrossToolchainHandler(BaseHandler):
             self._logger.debug(
                 "Setting UBUILD_TARBALL_NAME='%s'", tarball)
             env["UBUILD_TARBALL_NAME"] = tarball
+
+            self._logger.debug(
+                "Setting UBUILD_TARGET_NAME='%s'", target)
+            env["UBUILD_TARGET_NAME"] = target
 
             cache_file = None
             if self._cacher:

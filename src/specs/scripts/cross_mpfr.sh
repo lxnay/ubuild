@@ -3,7 +3,6 @@
 . build.include
 . toolchain.include
 
-PN="gmp"
 SRC_URI="http://ftp.gnu.org/gnu/${PN}/${UBUILD_TARBALL_NAME}"
 
 src_prepare() {
@@ -12,7 +11,8 @@ src_prepare() {
 }
 
 src_configure() {
-    build_src_configure --prefix="/usr" --enable-cxx
+    build_src_configure --prefix="/usr" --enable-shared \
+        --with-gmp="${UBUILD_BUILD_DIR}/gmp/usr"
 }
 
 src_install() {
@@ -23,4 +23,4 @@ src_install() {
     cross_merge_target_dir_sysroot
 }
 
-main "${PN}"
+main
