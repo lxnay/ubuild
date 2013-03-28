@@ -457,12 +457,13 @@ class UbuildCache(object):
                 block = readfile.read(16384)
         return m.hexdigest()
 
-    def _generate_entry_name(self, tarball_name, patches, environment):
+    def _generate_entry_name(self, tarball_name, script, patches, environment):
         """
         Given a set of input information, generate a cache entry file name.
         """
         sha = hashlib.sha1()
         sha.update(tarball_name)
+        sha.update(script)
 
         for patch in patches:
             sha.update(self._sha1(patch))
@@ -475,12 +476,13 @@ class UbuildCache(object):
         entry_path = os.path.abspath(os.path.join(self._dir, entry_name))
         return entry_path
 
-    def lookup(self, tarball_name, patches, environment):
+    def lookup(self, tarball_name, script, patches, environment):
         """
         Execute a cache lookup. Return a path to a tarball file.
 
         Args:
           tarball_name: name of the source tarball.
+          script: the build script path.
           patches: list of patches to apply.
           environment: current build environment.
 
@@ -488,12 +490,12 @@ class UbuildCache(object):
           a valid file path.
         """
         entry_path = self._generate_entry_name(
-            tarball_name, patches, environment)
+            tarball_name, script, patches, environment)
 
         if os.path.isfile(entry_path):
             return entry_path
 
-    def pack(self, image_dir, tarball_name, patches, environment):
+    def pack(self, image_dir, tarball_name, script, patches, environment):
         """
         Compress the build directory into a tarball and place it
         into the cache directory.
@@ -501,6 +503,7 @@ class UbuildCache(object):
         Args:
           image_dir: the directory in where the tarball has been built.
           tarball_name: name of the source tarball.
+          script: the build script path.
           patches: list of patches to apply.
           environment: current build environment.
 
@@ -508,7 +511,7 @@ class UbuildCache(object):
           An exit status.
         """
         entry_path = self._generate_entry_name(
-            tarball_name, patches, environment)
+            tarball_name, script, patches, environment)
 
         args = ("tar", "-c", "-J", "-p", "-f", entry_path, "./")
         exit_st = subprocess.call(args, cwd=image_dir)
@@ -755,7 +758,7 @@ class CrossToolchainHandler(BaseHandler):
             cache_file = None
             if self._cacher:
                 cache_file = self._cacher.lookup(
-                    tarball, patches, env)
+                    tarball, script, patches, env)
 
             if cache_file:
                 self._logger.info(
@@ -814,7 +817,7 @@ class CrossToolchainHandler(BaseHandler):
                             return 1
 
                         exit_st = self._cacher.pack(
-                            image_dir, tarball, patches, env)
+                            image_dir, tarball, script, patches, env)
                         if exit_st != 0:
                             self._logger.error(
                                 "[%s] pack of %s failed with exit status: %d",
