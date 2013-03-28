@@ -410,7 +410,7 @@ class UbuildSpec(GenericSpec):
         """
         Overridden from GenericSpec.
         """
-        return [CrossToolchainHandler]
+        return [CrossToolchainHandler, CrossPackageHandler]
 
     def output(self, metadata):
         """
@@ -446,15 +446,17 @@ class UbuildCache(object):
       as input and populates it.
     """
 
-    def __init__(self, cache_dir, variables):
+    def __init__(self, seed, cache_dir, variables):
         """
         Object constructor.
 
         Args:
+          seed: seed string to feed the cache key hash generator with.
           cache_dir: the cache directory in where all the cached
               tarballs are to be found.
           variables: the environment variables used for cache validation.
         """
+        self._seed = seed
         self._dir = cache_dir
         self._vars = variables
 
@@ -481,6 +483,7 @@ class UbuildCache(object):
         Given a set of input information, generate a cache entry file name.
         """
         sha = hashlib.sha1()
+        sha.update(self._seed)
         sha.update(tarball_name)
         sha.update(script)
 
@@ -560,13 +563,16 @@ class BaseHandler(GenericExecutionStep):
 
     def __init__(self, spec_path, metadata):
         super(BaseHandler, self).__init__(spec_path, metadata)
+        self._base_env = os.environ.copy()
         self._logger = logging.getLogger("ubuild.Handler")
 
         cache_dir = self.metadata.get("cache_dir")
         if cache_dir is not None:
             cache_vars = self.metadata.get("cache_variables")
             if cache_vars is not None:
-                self._cacher = UbuildCache(cache_dir, cache_vars)
+                self._cacher = UbuildCache(
+                    self.__class__.__name__, cache_dir,
+                    cache_vars)
             else:
                 self._logger.warning(
                     "Ubuild Cache disabled because cache_variables is unset")
@@ -668,45 +674,16 @@ class BaseHandler(GenericExecutionStep):
                     if err.errno != errno.ENOENT:
                         raise
 
+    def _pre_post_build(self, args):
+        """
+        Execute a {cross_,}{pre,post}_build script, if any is set.
 
-class CrossToolchainHandler(BaseHandler):
-    """
-    Ubuild Molecule handler in charge of building the cross compiler
-    toolchain.
-    """
+        Args:
+          args: {cross_,}pre_build script arguments or None.
 
-    def __init__(self, spec_path, metadata):
+        Returns:
+          an exit status.
         """
-        Object constructor.
-        """
-        super(CrossToolchainHandler, self).__init__(spec_path, metadata)
-        self._base_env = os.environ.copy()
-
-    def setup(self):
-        """
-        Overridden from GenericExecutionStep.
-        """
-        build_dir = self.metadata["build_dir"]
-        if os.path.isdir(build_dir):
-            self._logger.info(
-                "[%s] cleaning build_dir %s",
-                self.spec_name, build_dir)
-            try:
-                dir_cont = os.listdir(build_dir)
-            except OSError:
-                self._logger.exception("cannot list build_dir content")
-                return 1
-
-            for sub in dir_cont:
-                path = os.path.join(build_dir, sub)
-                shutil.rmtree(path, True)
-        return 0
-
-    def pre_run(self):
-        """
-        Overridden from GenericExecutionStep.
-        """
-        args = self.metadata.get("cross_pre_build")
         if not args:
             return 0
 
@@ -730,13 +707,17 @@ class CrossToolchainHandler(BaseHandler):
             )
         return exit_st
 
-    def run(self):
+    def _build(self, patch_pkgs, build_pkgs):
         """
-        Overridden from GenericExecutionStep.
-        """
-        patch_pkgs = self.metadata.get("cross_patch_pkg", [])
-        build_pkgs = self.metadata.get("cross_build_pkg", [])
+        Execute the build targets defined inside build_pkgs.
 
+        Args:
+          patch_pkgs: {cross_,}patch_pkg metadata.
+          build_pkgs: {cross_,}build_pkg metadata.
+
+        Returns:
+           an exit status.
+        """
         targets_map = {}
         for build_pkg in build_pkgs:
             targets_map[build_pkg["target"]] = build_pkg
@@ -813,7 +794,7 @@ class CrossToolchainHandler(BaseHandler):
                             prefix=".ubuild_image.")
                     except (OSError, IOError):
                         self._logger.exception(
-                            "CrossToolchainHandler: cannot create image_dir")
+                            "cannot create image_dir")
                         return 1
 
                     self._logger.debug("Setting UBUILD_IMAGE_DIR=%s", image_dir)
@@ -862,33 +843,107 @@ class CrossToolchainHandler(BaseHandler):
 
         return 0
 
+
+class CrossToolchainHandler(BaseHandler):
+    """
+    Ubuild Molecule handler in charge of building the cross compiler
+    toolchain.
+    """
+
+    def __init__(self, spec_path, metadata):
+        """
+        Object constructor.
+        """
+        super(CrossToolchainHandler, self).__init__(spec_path, metadata)
+
+    def setup(self):
+        """
+        Overridden from GenericExecutionStep.
+        """
+        build_dir = self.metadata["build_dir"]
+        if os.path.isdir(build_dir):
+            self._logger.info(
+                "[%s] cleaning build_dir %s",
+                self.spec_name, build_dir)
+            try:
+                dir_cont = os.listdir(build_dir)
+            except OSError:
+                self._logger.exception("cannot list build_dir content")
+                return 1
+
+            for sub in dir_cont:
+                path = os.path.join(build_dir, sub)
+                shutil.rmtree(path, True)
+        return 0
+
+    def pre_run(self):
+        """
+        Overridden from GenericExecutionStep.
+        """
+        args = self.metadata.get("cross_pre_build")
+        return self._pre_post_build(args)
+
+    def run(self):
+        """
+        Overridden from GenericExecutionStep.
+        """
+        patch_pkgs = self.metadata.get("cross_patch_pkg", [])
+        build_pkgs = self.metadata.get("cross_build_pkg", [])
+        return self._build(patch_pkgs, build_pkgs)
+
     def post_run(self):
         """
         Overridden from GenericExecutionStep.
         """
         args = self.metadata.get("cross_post_build")
-        if not args:
-            return 0
+        return self._pre_post_build(args)
 
-        self._logger.info(
-            "[%s] spawning: %s",
-            self.spec_name,
-            " ".join(args)
-            )
+    def kill(self, success=True):
+        """
+        Overridden from GenericExecutionStep.
+        """
+        return 0
 
-        script_dir = os.path.dirname(args[0])
-        env = self._setup_environment(self._base_env)
-        exit_st = subprocess.call(args, env=env, cwd=script_dir)
 
-        log_func = self._logger.info
-        if exit_st != 0:
-            log_func = self._logger.error
-        log_func(
-            "[%s] exit status: %d",
-            self.spec_name,
-            exit_st
-            )
-        return exit_st
+class CrossPackageHandler(BaseHandler):
+    """
+    Ubuild Molecule handler in charge of building sources using
+    the cross compiler toolchain.
+    """
+
+    def __init__(self, spec_path, metadata):
+        """
+        Object constructor.
+        """
+        super(CrossPackageHandler, self).__init__(spec_path, metadata)
+
+    def setup(self):
+        """
+        Overridden from GenericExecutionStep.
+        """
+        return 0
+
+    def pre_run(self):
+        """
+        Overridden from GenericExecutionStep.
+        """
+        args = self.metadata.get("pre_build")
+        return self._pre_post_build(args)
+
+    def run(self):
+        """
+        Overridden from GenericExecutionStep.
+        """
+        patch_pkgs = self.metadata.get("patch_pkg", [])
+        build_pkgs = self.metadata.get("build_pkg", [])
+        return self._build(patch_pkgs, build_pkgs)
+
+    def post_run(self):
+        """
+        Overridden from GenericExecutionStep.
+        """
+        args = self.metadata.get("post_build")
+        return self._pre_post_build(args)
 
     def kill(self, success=True):
         """
