@@ -19,12 +19,20 @@ src_configure() {
         --target="${CTARGET}" \
         --prefix="/usr" \
         --with-sysroot="${CROSS_SYSROOT}" \
-        --disable-libssp --disable-libgomp \
-        --disable-libmudflap --disable-libquadmath \
-        --enable-languages=c \
+        --disable-libssp \
+        --disable-libmudflap \
+        --disable-bootstrap \
+        --disable-libgcj \
+        --enable-__cxa_atexit \
+        --enable-clocale=gnu \
+        --enable-libstdcxx-time \
+        --enable-libgomp \
+        --enable-checking=release \
+        --enable-languages=c,c++,fortran \
         --with-mpfr="${UBUILD_BUILD_DIR}/mpfr/usr" \
         --with-gmp="${UBUILD_BUILD_DIR}/gmp/usr" \
-        --with-mpc="${UBUILD_BUILD_DIR}/mpc/usr"
+        --with-mpc="${UBUILD_BUILD_DIR}/mpc/usr" \
+        ${GCC_CONFIGURE_ARGS}
 }
 
 src_install() {

@@ -13,25 +13,27 @@ src_prepare() {
 }
 
 src_configure() {
-    BUILD_CC=gcc CC="${CTARGET}-gcc" \
-        CXX="${CTARGET}-g++" AR="${CTARGET}-ar" \
-        AS="${CTARGET}-as" \
-        RANLIB="${CTARGET}-ranlib" \
-        build_src_configure \
+    export \
+        libc_cv_c_cleanup=yes \
+        libc_cv_forced_unwind=yes
+
+    build_src_configure \
         --prefix="/usr" \
-        --with-headers="${UBUILD_BUILD_DIR}/linux-headers/include" \
-        --host="${CTARGET}" \
-        --disable-profile \
-        --without-gd --without-cvs \
-        --enable-add-ons="${S}/nptl,${UBUILD_BUILD_DIR}/glibc-ports"
+        --with-headers="${UBUILD_BUILD_DIR}/linux-headers/usr/include" \
+        --host="${CTARGET}" --enable-bind-now \
+        --disable-profile --without-gd \
+        --without-cvs --disable-multi-arch \
+        --enable-obsolete-rpc --enable-kernel=2.6.9 \
+        --enable-add-ons="nptl,libidn,${UBUILD_BUILD_DIR}/glibc-ports"
 }
 
 src_compile() {
-    :;
+    build_src_compile || bash
 }
 
 src_install() {
-    bmake install_root="${TARGET_DIR}" install-headers || return 1
+    bmake install_root="${TARGET_DIR}" install || return 1
+
     cross_merge_target_dir_sysroot
 }
 

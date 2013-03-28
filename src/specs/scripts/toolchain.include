@@ -41,24 +41,23 @@ cross_merge_target_dir_sysroot() {
 # individual ${TARGET_DIR}s unpacked by UbuildCache into ${UBUILD_BUILD_DIR}
 # @USAGE: cross_sysroot_init
 cross_sysroot_init() {
-    local init_f="${CROSS_SYSROOT}/.initialized"
-    if [ ! -f "${init_f}" ]; then
-        echo "Creating ${CROSS_SYSROOT} ..."
-        rm -rf "${CROSS_SYSROOT}"
-        mkdir -p "${CROSS_SYSROOT}"
+    local init_f=".cross_sysroot_init"
 
-        local target_dir= target_file=
-        for target_file in $(find "${UBUILD_BUILD_DIR}" \
-            -name "${CROSS_UBUILD_TARGET_DIR_FILE}"); do
+    local target_dir= target_file=
+    for target_file in $(find "${UBUILD_BUILD_DIR}" \
+        -name "${CROSS_UBUILD_TARGET_DIR_FILE}"); do
 
-            target_dir=$(dirname "${target_file}")
-            if [ "${target_dir}" = "${CROSS_SYSROOT}" ]; then
-                continue
-            fi
-            TARGET_DIR="${target_dir}" cross_merge_target_dir_sysroot \
-                || return 1
-        done
+        target_dir=$(dirname "${target_file}")
+        if [ "${target_dir}" = "${CROSS_SYSROOT}" ]; then
+            continue
+        fi
+        if [ -f "${target_dir}/${init_f}" ]; then
+            continue
+        fi
 
-        touch "${init_f}"
-    fi
+        TARGET_DIR="${target_dir}" cross_merge_target_dir_sysroot \
+            || return 1
+
+        touch "${target_dir}/${init_f}"
+    done
 }

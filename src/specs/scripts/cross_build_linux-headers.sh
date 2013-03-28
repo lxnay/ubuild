@@ -24,7 +24,7 @@ src_compile() {
 src_install() {
     BUILD_DIR="${S}" \
         bmake -j1 ARCH="${ARCH}" CROSS_COMPILE="${CTARGET}-" \
-        INSTALL_HDR_PATH="${TARGET_DIR}" \
+        INSTALL_HDR_PATH="${TARGET_DIR}/usr" \
         O="${BUILD_DIR}" headers_install || return 1
     cross_merge_target_dir_sysroot
 }

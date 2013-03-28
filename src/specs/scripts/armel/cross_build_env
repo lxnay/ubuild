@@ -11,4 +11,8 @@ CFLAGS="-O2 -pipe"
 CXXFLAGS="${CXXFLAGS}"
 LDFLAGS="-Wl,-O1 -Wl,--as-needed"
 
-export CFLAGS CXXFLAGS LDFLAGS MAKEOPTS
+# armv7 specific args
+# armhf: --with-fpu=vfpv3-d16
+GCC_CONFIGURE_ARGS="--with-arch=armv7-a --with-float=soft"
+
+export CFLAGS CXXFLAGS LDFLAGS MAKEOPTS GCC_CONFIGURE_ARGS

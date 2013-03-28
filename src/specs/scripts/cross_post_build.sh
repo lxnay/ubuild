@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 SUBDIR="${1}"
 if [ -z "${SUBDIR}" ]; then
