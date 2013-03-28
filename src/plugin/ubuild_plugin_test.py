@@ -23,14 +23,14 @@ import sys
 import tempfile
 import unittest
 
-from molecule.settings import SpecParser
-
 
 class UbuildSpecTest(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
         from plugin import ubuild_plugin
+        from molecule.settings import SpecParser
+        cls._SpecParser = SpecParser
         cls._ubuild = ubuild_plugin
 
     def testExecutionStrategy(self):
@@ -52,11 +52,11 @@ class UbuildSpecTest(unittest.TestCase):
             os.chmod(tmp_path, 0o700)
 
             income = """\
-tarball.tar.xz foo,
-tarball.tar.xz %(build_1)s %(env_1)s,
-tarball.tar.xz "!this does not exist" "!even this",
-tarball.tar.xz %(build_2)s %(env_2)s,
-tarball.tar.xz,
+a tarball.tar.xz foo,
+b tarball.tar.xz %(build_1)s %(env_1)s,
+c tarball.tar.xz "!this does not exist" "!even this",
+d tarball.tar.xz %(build_2)s %(env_2)s,
+e tarball.tar.xz,
 """ % {
                 "build_1": tmp_path,
                 "build_2": tmp_path,
@@ -65,11 +65,13 @@ tarball.tar.xz,
 
             expected_outcome = [
                 {
+                    "target": "b",
                     "tarball": "tarball.tar.xz",
                     "build_script": tmp_path,
                     "env_file": tmp_path,
                     },
                 {
+                    "target": "d",
                     "tarball": "tarball.tar.xz",
                     "build_script": tmp_path,
                     "env_file": tmp_path,
@@ -114,22 +116,22 @@ tarball.tar.xz,
             os.chmod(tmp_path, 0o700)
 
             income = """\
-tarball.tar.xz bar,
-tarball.tar.xz %(patch_1)s,
-tarball.tar.xz,
-tarball.tar.xz %(patch_2)s,
-tarball.tar.xz "!this does not exist",
+a bar,
+b %(patch_1)s,
+c,
+d %(patch_2)s,
+e "!this does not exist",
 """ % {
                 "patch_1": tmp_path,
                 "patch_2": tmp_path,}
 
             expected_outcome = [
                 {
-                    "tarball": "tarball.tar.xz",
+                    "target": "b",
                     "patch": tmp_path,
                     },
                 {
-                    "tarball": "tarball.tar.xz",
+                    "target": "d",
                     "patch": tmp_path,
                     },
                 ]
@@ -195,7 +197,7 @@ tarball.tar.xz "!this does not exist",
                 spec_f.write(content)
             spec_tmp_fd = None
 
-            parser = SpecParser(spec_tmp_path)
+            parser = self._SpecParser(spec_tmp_path)
             extracted = parser.parse()
 
             self.assert_(isinstance(extracted["__plugin__"],
@@ -279,20 +281,20 @@ sources_dir: %(dir)s
 rootfs_dir: %(dir)s
 
 cross_build_pkg:
-    gmp-4.3.2.tar.bz2 %(script)s %(env)s,
-    gcc-4.7.2.tar.bz2 %(script)s %(env)s
+    gmp gmp-4.3.2.tar.bz2 %(script)s %(env)s,
+    gcc gcc-4.7.2.tar.bz2 %(script)s %(env)s
 
 cross_patch_pkg:
-    gmp-4.3.2.tar.bz2 %(script)s,
-    gcc-4.7.2.tar.bz2 %(script)s
+    gmp %(script)s,
+    gcc %(script)s
 
 build_pkg:
-    glibc-2.17.tar.bz2 %(script)s %(env)s,
-    busybox-1.0.tar.bz2 %(script)s %(env)s
+    glibc glibc-2.17.tar.bz2 %(script)s %(env)s,
+    busybox busybox-1.0.tar.bz2 %(script)s %(env)s
 
 patch_pkg:
-    glibc-2.17.tar.bz2 %(script)s,
-    busybox-1.0.tar.bz2 %(script)s
+    glibc %(script)s,
+    busybox %(script)s
 
 cache_variables:
     CFLAGS, CPPFLAGS, CXXFLAGS, LDFLAGS,
@@ -309,75 +311,79 @@ post_build: %(script)s armel_post
 build_image: %(script)s armel
 """
         expected = {
-            'cross_post_build': [
-                '%(script)s',
-                'armel_cross_post'],
-            'build_image': [
-                '%(script)s',
-                'armel'],
-            'image_name': 'ubuild_armel.test.img',
-            'execution_strategy': 'ubuild',
-            'cache_dir': '%(dir)s',
-            'cross_pre_build': [
-                '%(script)s',
-                'armel_cross_pre'],
-            'patch_pkg': [
+            "cross_post_build": [
+                "%(script)s",
+                "armel_cross_post"],
+            "build_image": [
+                "%(script)s",
+                "armel"],
+            "image_name": "ubuild_armel.test.img",
+            "execution_strategy": "ubuild",
+            "cache_dir": "%(dir)s",
+            "cross_pre_build": [
+                "%(script)s",
+                "armel_cross_pre"],
+            "patch_pkg": [
                 {
-                    'tarball': 'glibc-2.17.tar.bz2',
-                    'patch': '%(script)s'
+                    "target": "glibc",
+                    "patch": "%(script)s"
                     },
                 {
-                    'tarball': 'busybox-1.0.tar.bz2',
-                    'patch': '%(script)s'
+                    "target": "busybox",
+                    "patch": "%(script)s"
                     }
                 ],
-            'build_pkg': [
+            "build_pkg": [
                 {
-                    'tarball': 'glibc-2.17.tar.bz2',
-                    'build_script': '%(script)s',
-                    'env_file': '%(env)s'
+                    "target": "glibc",
+                    "tarball": "glibc-2.17.tar.bz2",
+                    "build_script": "%(script)s",
+                    "env_file": "%(env)s"
                     },
                 {
-                    'tarball': 'busybox-1.0.tar.bz2',
-                    'build_script': '%(script)s',
-                    'env_file': '%(env)s'
+                    "target": "busybox",
+                    "tarball": "busybox-1.0.tar.bz2",
+                    "build_script": "%(script)s",
+                    "env_file": "%(env)s"
                     }
                 ],
-            'rootfs_dir': '%(dir)s',
-            'post_build': [
-                '%(script)s',
-                'armel_post'],
-            'destination_dir': '%(dir)s',
-            'pre_build': [
-                '%(script)s', 'armel_pre'],
-            'sources_dir': '%(dir)s',
-            'build_dir': '%(dir)s',
-            'cross_build_pkg': [
+            "rootfs_dir": "%(dir)s",
+            "post_build": [
+                "%(script)s",
+                "armel_post"],
+            "destination_dir": "%(dir)s",
+            "pre_build": [
+                "%(script)s", "armel_pre"],
+            "sources_dir": "%(dir)s",
+            "build_dir": "%(dir)s",
+            "cross_build_pkg": [
                 {
-                    'tarball': 'gmp-4.3.2.tar.bz2',
-                    'build_script': '%(script)s',
-                    'env_file': '%(env)s'
+                    "target": "gmp",
+                    "tarball": "gmp-4.3.2.tar.bz2",
+                    "build_script": "%(script)s",
+                    "env_file": "%(env)s"
                     },
                 {
-                    'tarball': 'gcc-4.7.2.tar.bz2',
-                    'build_script': '%(script)s',
-                    'env_file': '%(env)s'
+                    "target": "gcc",
+                    "tarball": "gcc-4.7.2.tar.bz2",
+                    "build_script": "%(script)s",
+                    "env_file": "%(env)s"
                     }
                 ],
-            'cross_patch_pkg': [
+            "cross_patch_pkg": [
                 {
-                    'tarball': 'gmp-4.3.2.tar.bz2',
-                    'patch': '%(script)s'
+                    "target": "gmp",
+                    "patch": "%(script)s"
                     },
                 {
-                    'tarball': 'gcc-4.7.2.tar.bz2',
-                    'patch': '%(script)s'
+                    "target": "gcc",
+                    "patch": "%(script)s"
                     }
                 ],
-            'cache_variables': [
-                'CFLAGS', 'CPPFLAGS', 'CXXFLAGS',
-                'LDFLAGS', 'ABI', 'ARCH', 'GMPABI',
-                'MAKEOPTS']
+            "cache_variables": [
+                "CFLAGS", "CPPFLAGS", "CXXFLAGS",
+                "LDFLAGS", "ABI", "ARCH", "GMPABI",
+                "MAKEOPTS"]
             }
         self._testSpecParse(content, expected)
 
@@ -388,7 +394,7 @@ if __name__ == "__main__":
     sys.path.insert(0, module_dir)
 
     # This is a fallback molecule path
-    molecule_dir = os.path.join(module_dir, "..")
+    molecule_dir = os.path.join(module_dir, "..", "molecule")
     sys.path.append(molecule_dir)
 
     # this tests what the ubuild script does
