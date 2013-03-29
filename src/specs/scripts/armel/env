@@ -1,0 +1,18 @@
+#!/bin/bash
+
+# These are needed by GCC
+ARCH="arm" # armv7a ?
+ABI="gnueabi"
+CTARGET="${ARCH}-unknown-linux-${ABI}"
+export ARCH ABI CTARGET
+
+MAKEOPTS="-j 5"
+CFLAGS="-O2 -pipe -march=armv7-a -mfpu=vfpv3-d16 -mfloat-abi=softfp"
+CXXFLAGS="${CXXFLAGS}"
+LDFLAGS="-Wl,-O1 -Wl,--as-needed"
+
+# Linux kernel configuration, set either KERNEL_DEFCONFIG or KERNEL_CONFIG
+KERNEL_DEFCONFIG=""
+KERNEL_CONFIG="../kernel/armv7_config"
+
+export CFLAGS CXXFLAGS LDFLAGS MAKEOPTS KERNEL_DEFCONFIG KERNEL_CONFIG

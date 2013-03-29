@@ -34,19 +34,22 @@ cross_build_pkg:
     glibc glibc-2.16.0.tar.xz scripts/cross_glibc.sh scripts/armel/cross_env,
     gcc gcc-4.7.2.tar.bz2 scripts/cross_gcc-stage2.sh scripts/armel/cross_env,
 
-
 cross_patch_pkg:
     gmp patches/gmp-4.3.2-ABI-multilib.patch,
     glibc patches/glibc-2.16-no-libgcc_s.patch,
     glibc-ports patches/glibc-ports-2.16-no-libgcc_s.patch,
     glibc-ports patches/glibc-ports-2.16-arm-specific-static-stubs.patch,
 
+build_pkg:
+    kernel linux-3.7.10.tar.xz scripts/build_pkg_kernel.sh scripts/armel/env,
+
 cache_variables:
     CFLAGS, CPPFLAGS, CXXFLAGS, LDFLAGS,
-    ARCH, ABI, GMPABI, MAKEOPTS, CROSS_SYSROOT,
-    WORK_ROOTFS_DIR, GCC_CONFIGURE_ARGS
+    ARCH, ABI, GMPABI, CROSS_SYSROOT,
+    WORK_ROOTFS_DIR, GCC_CONFIGURE_ARGS,
+    KERNEL_DEFCONFIG, KERNEL_CONFIG
 
-cross_post_build: scripts/cross_post_build.sh
+cross_post_build: scripts/cross_post_build.sh armel
 
 pre_build: scripts/pre_build.sh
 

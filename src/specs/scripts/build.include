@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# @DESCRIPTION: original directory path from where this script was called
+UBUILD_PWD="${PWD}"
+
 # @DESCRIPTION: directory used as the in the works root filesystem directory
 WORK_ROOTFS_DIR="${UBUILD_BUILD_DIR}/rootfs"
 
@@ -124,6 +127,7 @@ done
 # @USAGE: bmake [make args]
 bmake() {
     cd "${BUILD_DIR}" || return 1
+    echo "Running: make ${MAKEOPTS} ${@}"
     make ${MAKEOPTS} "${@}"
 }
 
