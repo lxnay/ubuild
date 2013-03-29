@@ -6,7 +6,7 @@ ABI="gnueabi"
 CTARGET="${ARCH}-unknown-linux-${ABI}"
 export ARCH ABI CTARGET
 
-MAKEOPTS="-j 3"
+MAKEOPTS="-j 5"
 CFLAGS="-O2 -pipe"
 CXXFLAGS="${CXXFLAGS}"
 LDFLAGS="-Wl,-O1 -Wl,--as-needed"
