@@ -46,13 +46,11 @@ cache_variables:
     ARCH, ABI, GMPABI, MAKEOPTS, CROSS_SYSROOT,
     WORK_ROOTFS_DIR, GCC_CONFIGURE_ARGS
 
-cross_pre_build: scripts/cross_pre_build.sh armel
+cross_post_build: scripts/cross_post_build.sh
 
-cross_post_build: scripts/cross_post_build.sh armel
+pre_build: scripts/pre_build.sh
 
 build_image: scripts/build_image.sh armel
 
 # TODO, add:
 # - {build,patch}_pkg
-# - pre_build
-# - post_build

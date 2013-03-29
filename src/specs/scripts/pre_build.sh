@@ -2,13 +2,6 @@
 
 set -e
 
-SUBDIR="${1}"
-if [ -z "${SUBDIR}" ]; then
-    echo "${0} <subdir containing env>" >&2
-    exit 1
-fi
-
-. "${SUBDIR}/cross_env"
 . build.include
 
 echo "Mirroring ${UBUILD_ROOTFS_DIR} into work rootfs dir: ${WORK_ROOTFS_DIR}/"

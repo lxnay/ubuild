@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # These are needed by GCC
 ARCH="arm"
