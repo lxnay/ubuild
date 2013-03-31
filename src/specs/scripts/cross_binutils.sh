@@ -3,8 +3,6 @@
 . build.include
 . toolchain.include
 
-SRC_URI="http://ftp.gnu.org/gnu/${PN}/${UBUILD_TARBALL_NAME}"
-
 src_prepare() {
     cross_sysroot_init || return 1
     build_src_prepare

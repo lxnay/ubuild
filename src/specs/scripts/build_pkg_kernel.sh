@@ -5,8 +5,6 @@ set -e
 . build.include
 . toolchain.include # ${CROSS_SYSROOT}
 
-SRC_URI="http://www.kernel.org/pub/linux/kernel/v3.x/${UBUILD_TARBALL_NAME}"
-
 # @DESCRIPTION: bmake wrapper for the Linux kernel build system calls. It
 # automatically appends the cross compiler options.
 # @USAGE: xkmake [ærgs]

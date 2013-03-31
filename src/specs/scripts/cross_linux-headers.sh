@@ -3,8 +3,6 @@
 . build.include
 . toolchain.include
 
-SRC_URI="http://www.kernel.org/pub/linux/kernel/v3.x/${UBUILD_TARBALL_NAME}"
-
 src_configure() {
     :;
 }

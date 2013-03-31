@@ -6,14 +6,8 @@ UBUILD_PWD="${PWD}"
 # @DESCRIPTION: directory used as the in the works root filesystem directory
 WORK_ROOTFS_DIR="${UBUILD_BUILD_DIR}/rootfs"
 
-# @DESCRIPTION: path to the source tarball archive
-ARCHIVE="${UBUILD_SOURCES_DIR}/${UBUILD_TARBALL_NAME}"
-
-# @DESCRIPTION: tarball package name without the .tar.* extension
-P="${UBUILD_TARBALL_NAME/.tar*}"
-
 # @DESCRIPTION: handy variable that contains the ${UBUILD_TARGET_NAME} variable
-PN="${UBUILD_TARGET_NAME}"
+PN="${UBUILD_TARGET_NAME/*=}" # drop cross= or pkg=
 
 # @DESCRIPTION: install target directory for build systems. Once data is
 # installed there, these ubuild scripts will handle the build cache generation
@@ -24,26 +18,47 @@ TARGET_DIR="${UBUILD_BUILD_DIR}/${PN}"
 # inside the cache tarball and then unpacked back into ${UBUILD_BUILD_DIR}.
 IMAGE_TARGET_DIR="${UBUILD_IMAGE_DIR}/${PN}"
 
-# @DESCRIPTION: fetch the source tarball saving it to ${ARCHIVE}
+# @DESCRIPTION: internal variable used to accumulate downloaded tarball paths
+ARCHIVES=()
+
+# @DESCRIPTION: fetch the source tarballs defined in ${UBUILD_SRC_URI}
 # @USAGE: build_src_fetch
 build_src_fetch() {
-    if [ ! -f "${ARCHIVE}" ]; then
-        echo "Starting to download ${ARCHIVE}"
-        wget "${SRC_URI}" -O "${ARCHIVE}" || {
-            rm -f "${ARCHIVE}";
-            return 1;
-        }
-    else
-        local sha1=$(sha1sum "${ARCHIVE}")
-        echo "${ARCHIVE} already there, SHA1: ${sha1}"
-    fi
+    local data=
+    local url=
+    local rename=
+    local archive=
+
+    IFS=";" read -ra src_uri <<< "${UBUILD_SRC_URI}"
+    for urlen in "${src_uri[@]}"; do
+        data=( ${urlen} )
+        url="${data[0]}"
+        rename="${data[1]}"
+        archive="${UBUILD_SOURCES_DIR}/${rename}"
+
+        if [ ! -f "${archive}" ]; then
+            echo "Starting to download ${archive}"
+            wget "${url}" -O "${archive}" || {
+                rm -f "${archive}";
+                return 1;
+            }
+        else
+            local sha1=$(sha1sum "${archive}")
+            echo "${archive} already there, SHA1: ${sha1}"
+        fi
+        ARCHIVES+=( "${archive}" )
+
+    done
 }
 
-# @DESCRIPTION: unpack the downloaded tarball (${ARCHIVE})
+# @DESCRIPTION: unpack the downloaded tarballs
 # into ${WORKDIR}.
 # @USAGE: build_src_unpack
 build_src_unpack() {
-    tar -x -a -f "${ARCHIVE}" -C "${WORKDIR}"
+    for archive in "${ARCHIVES[@]}"; do
+        echo "Unpacking ${archive} ..."
+        tar -x -a -f "${archive}" -C "${WORKDIR}" || return 1
+    done
 }
 
 # @DESCRIPTION: apply patches declared in ${UBUILD_PATCHES}
@@ -142,7 +157,7 @@ bmake() {
 # - pkg_merge: merge the sources into UBUILD_IMAGE_DIR/<PN>
 # If any of these functions is not defined, main() will default to the
 # built-in build_<phase>.
-# @USAGE: main <PN>
+# @USAGE: main
 main() {
     WORKDIR=$(TMPDIR="${UBUILD_BUILD_DIR}" mktemp -d \
         --suffix="${UBUILD_TARBALL_NAME}")
@@ -151,7 +166,7 @@ main() {
         exit 1
     fi
 
-    S="${WORKDIR}/${P}"
+    S="${WORKDIR}/${UBUILD_SOURCES}"
     BUILD_DIR="${WORKDIR}/build"
     T="${WORKDIR}/temp"
     PATCH_LOG="${T}/build.log"
@@ -162,19 +177,18 @@ main() {
     echo "UBUILD_BUILD_DIR: ${UBUILD_BUILD_DIR}"
     echo "UBUILD_IMAGE_DIR: ${UBUILD_IMAGE_DIR}"
     echo "UBUILD_SOURCES_DIR: ${UBUILD_SOURCES_DIR}"
+    echo "UBUILD_SOURCES: ${UBUILD_SOURCES}"
     echo "UBUILD_ROOTFS_DIR: ${UBUILD_ROOTFS_DIR}"
-    echo "UBUILD_TARBALL_NAME: ${UBUILD_TARBALL_NAME}"
+    echo "UBUILD_SRC_URI: ${UBUILD_SRC_URI}"
     echo "UBUILD_TARGET_NAME: ${UBUILD_TARGET_NAME}"
     echo "UBUILD_PATCHES: ${UBUILD_PATCHES}"
     echo
     echo "Local variables:"
-    echo "SRC_URI: ${SRC_URI}"
     echo "ARCHIVE: ${ARCHIVE}"
     echo "WORKDIR: ${WORKDIR}"
     echo "TARGET_DIR: ${TARGET_DIR}"
     echo "IMAGE_TARGET_DIR: ${IMAGE_TARGET_DIR}"
     echo "BUILD_DIR: ${BUILD_DIR}"
-    echo "P: ${P}"
     echo "PN: ${PN}"
     echo "S: ${S}"
     echo "PATCH_LOG: ${PATCH_LOG}"
