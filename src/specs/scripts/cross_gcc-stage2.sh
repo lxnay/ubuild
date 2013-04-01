@@ -4,7 +4,6 @@
 . toolchain.include
 
 src_prepare() {
-    cross_sysroot_init || return 1
     cross_setup_environment || return 1
     build_src_prepare
 }
@@ -32,7 +31,6 @@ src_configure() {
 
 src_install() {
     bmake DESTDIR="${TARGET_DIR}" install || return 1
-    cross_merge_target_dir_sysroot
 }
 
 main

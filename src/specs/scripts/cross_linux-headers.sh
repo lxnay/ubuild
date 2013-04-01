@@ -7,11 +7,6 @@ src_configure() {
     :;
 }
 
-src_prepare() {
-    cross_sysroot_init || return 1
-    build_src_prepare
-}
-
 src_compile() {
     BUILD_DIR="${S}" \
         bmake -j1 ARCH="${ARCH}" CROSS_COMPILE="${CTARGET}-" \
@@ -23,7 +18,6 @@ src_install() {
         bmake -j1 ARCH="${ARCH}" CROSS_COMPILE="${CTARGET}-" \
         INSTALL_HDR_PATH="${TARGET_DIR}/usr" \
         O="${BUILD_DIR}" headers_install || return 1
-    cross_merge_target_dir_sysroot
 }
 
 main

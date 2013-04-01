@@ -1,5 +1,7 @@
 #!/bin/bash
 
+. base.include
+
 # @DESCRIPTION: original directory path from where this script was called
 UBUILD_PWD="${PWD}"
 
@@ -8,6 +10,10 @@ WORK_ROOTFS_DIR="${UBUILD_BUILD_DIR}/rootfs"
 
 # @DESCRIPTION: handy variable that contains the ${UBUILD_TARGET_NAME} variable
 PN="${UBUILD_TARGET_NAME/*=}" # drop cross= or pkg=
+
+# @DESCRIPTION: handy variable that contains the target type, which can either
+# be "cross" or "pkg".
+TARGET_TYPE="${UBUILD_TARGET_NAME/=*}"
 
 # @DESCRIPTION: install target directory for build systems. Once data is
 # installed there, these ubuild scripts will handle the build cache generation
@@ -119,14 +125,77 @@ build_src_install() {
     bmake DESTDIR="${TARGET_DIR}" "${@}" install
 }
 
-# @DESCRIPTION: merge the content installed by build_src_install into
-# UBUILD_IMAGE_DIR/<pkgname> as part of the ubuild build cache implementation
-# The content of UBUILD_IMAGE_DIR/<pkgname> will be then unpacked into
-# ${ŦARGET_DIR} (which is just ${UBUILD_BUILD_DIR}/<pkgname> and it's where
+# @DESCRIPTION: copy the content installed by build_src_install into
+# UBUILD_IMAGE_DIR/<PN> as part of the ubuild build cache implementation
+# The content of UBUILD_IMAGE_DIR/<PN> will be then unpacked into
+# ${ŦARGET_DIR} (which is just ${UBUILD_BUILD_DIR}/<PN> and it's where
 # build_src_install installs the built data).
+# @USAGE: build_pkg_cache
+build_pkg_cache() {
+    rsync -avx -H -A "${TARGET_DIR}"/ "${IMAGE_TARGET_DIR}"/
+}
+
+# @DESCRIPTION: merge the content of ${TARGET_DIR} either into
+# ${WORK_ROOTFS_DIR}/ in case of ${TARGET_TYPE} = "pkg" or into
+# ${CROSS_SYSROOT}/ in case of ${TARGET_TYPE} = "cross".
 # @USAGE: build_pkg_merge
 build_pkg_merge() {
-    rsync -avx -H -A "${TARGET_DIR}"/ "${IMAGE_TARGET_DIR}"/
+    # save target type into ${TARGET_DIR}. This way we can
+    # recreate WORK_ROOTFS_DIR (or CROSS_SYSROOT) even from
+    # cached tarballs.
+    echo "${TARGET_TYPE}" > "${TARGET_DIR}/${TARGET_TYPE_FILE}" || return 1
+
+    local dest=
+    if [ "${TARGET_TYPE}" = "pkg" ]; then
+        dest="${WORK_ROOTFS_DIR}"
+    elif [ "${TARGET_TYPE}" = "cross" ]; then
+        dest="${CROSS_SYSROOT}"
+    else
+        echo "Unknown TARGET_TYPE = ${TARGET_TYPE}" >&2
+        return 1
+    fi
+
+    echo "Merging ${TARGET_DIR} into ${dest} ..."
+    rsync -ax -H -A -X "${TARGET_DIR}"/ "${dest}"/ || return 1
+}
+
+# @DESCRIPTION: initialize ${CROSS_SYSROOT} and ${WORK_ROOTFS_DIR}
+# directories individual ${TARGET_DIR}s unpacked by UbuildCache into
+# ${UBUILD_BUILD_DIR}
+# @USAGE: _root_init
+root_init() {
+    local init_f=".ubuild_root_init"
+
+    local target_dir= target_file=
+    for target_file in $(find "${UBUILD_BUILD_DIR}" \
+        -name "${TARGET_TYPE_FILE}"); do
+
+        target_type=$(cat "${target_file}")
+        if [ "${target_type}" != "cross" ] && \
+            [ "${target_type}" != "pkg" ]; then
+            echo "Invalid target type in ${target_file}" >&2
+            continue
+        fi
+
+        target_dir=$(dirname "${target_file}")
+        if [ "${target_dir}" = "${CROSS_SYSROOT}" ]; then
+            echo "TARGET_DIR is ${CROSS_SYSROOT}, skipping ..."
+            continue
+        fi
+        if [ "${target_dir}" = "${WORK_ROOTFS_DIR}" ]; then
+            echo "TARGET_DIR is ${WORK_ROOTFS_DIR}, skipping ..."
+            continue
+        fi
+        if [ -f "${target_dir}/${init_f}" ]; then
+            echo "TARGET_DIR ${target_dir} already initialized, skipping ..."
+            continue
+        fi
+
+        TARGET_DIR="${target_dir}" TARGET_TYPE="${target_type}" \
+            build_pkg_merge || return 1
+
+        touch "${target_dir}/${init_f}"
+    done
 }
 
 
@@ -154,7 +223,7 @@ bmake() {
 # - src_configure: configure the sources
 # - src_compile: compile the sources
 # - src_install: install the sources
-# - pkg_merge: merge the sources into UBUILD_IMAGE_DIR/<PN>
+# - pkg_cache: cache the build outcome
 # If any of these functions is not defined, main() will default to the
 # built-in build_<phase>.
 # @USAGE: main
@@ -185,22 +254,25 @@ main() {
     echo
     echo "Local variables:"
     echo "ARCHIVE: ${ARCHIVE}"
-    echo "WORKDIR: ${WORKDIR}"
-    echo "TARGET_DIR: ${TARGET_DIR}"
-    echo "IMAGE_TARGET_DIR: ${IMAGE_TARGET_DIR}"
     echo "BUILD_DIR: ${BUILD_DIR}"
+    echo "IMAGE_TARGET_DIR: ${IMAGE_TARGET_DIR}"
+    echo "PATCH_LOG: ${PATCH_LOG}"
     echo "PN: ${PN}"
     echo "S: ${S}"
-    echo "PATCH_LOG: ${PATCH_LOG}"
+    echo "TARGET_DIR: ${TARGET_DIR}"
+    echo "TARGET_TYPE: ${TARGET_TYPE}"
+    echo "WORKDIR: ${WORKDIR}"
     echo
 
     src_fetch && \
         src_unpack && \
+        root_init && \
         src_prepare && \
         src_configure && \
         src_compile && \
         src_install && \
-        pkg_merge
+        pkg_merge && \
+        pkg_cache
     exit_st=${?}
 
     if [ "${exit_st}" = "0" ]; then

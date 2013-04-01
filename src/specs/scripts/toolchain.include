@@ -3,14 +3,7 @@
 # This include file contains helper functions that can be used
 # to build and run a cross compiler.
 
-# @DESCRIPTION: This empty file is created into ${TARGET_DIR} whenever
-# cross_merge_target_dir_sysroot is called. cross_sysroot_init will then
-# look for these inside ${UBUILD_BUILD_DIR} in order to recreate a
-# ${CROSS_SYSROOT} directory tree from scratch.
-CROSS_UBUILD_TARGET_DIR_FILE=".cross_ubuild_target_dir"
-
-# @DESCRIPTION: directory in where the cross compiler toolchain is merged.
-CROSS_SYSROOT="${UBUILD_BUILD_DIR}/${CTARGET}"
+. base.include
 
 # @DESCRIPTION: configure the build time and runtime environment
 # of the cross compiler toolchain.
@@ -25,39 +18,4 @@ cross_setup_environment() {
 
         _CROSS_SETUP_ENVIRONMENT=1
     fi
-}
-
-# @DESCRIPTION: merge ${TARGET_DIR} into the common ${CROSS_SYSROOT}
-# directory. ${TARGET_DIR} is the path in where package data must be
-# installed.
-# @USAGE: cross_merge_target_dir_sysroot
-cross_merge_target_dir_sysroot() {
-    echo "Merging ${TARGET_DIR} into ${CROSS_SYSROOT} ..."
-    rsync -ax -H -A -X "${TARGET_DIR}"/ "${CROSS_SYSROOT}"/ || return 1
-    touch "${TARGET_DIR}/${CROSS_UBUILD_TARGET_DIR_FILE}" || return 1
-}
-
-# @DESCRIPTION: initialize the common ${CROSS_SYSROOT} directory from
-# individual ${TARGET_DIR}s unpacked by UbuildCache into ${UBUILD_BUILD_DIR}
-# @USAGE: cross_sysroot_init
-cross_sysroot_init() {
-    local init_f=".cross_sysroot_init"
-
-    local target_dir= target_file=
-    for target_file in $(find "${UBUILD_BUILD_DIR}" \
-        -name "${CROSS_UBUILD_TARGET_DIR_FILE}"); do
-
-        target_dir=$(dirname "${target_file}")
-        if [ "${target_dir}" = "${CROSS_SYSROOT}" ]; then
-            continue
-        fi
-        if [ -f "${target_dir}/${init_f}" ]; then
-            continue
-        fi
-
-        TARGET_DIR="${target_dir}" cross_merge_target_dir_sysroot \
-            || return 1
-
-        touch "${target_dir}/${init_f}"
-    done
 }

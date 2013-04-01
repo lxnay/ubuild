@@ -1,12 +1,6 @@
 #!/bin/bash
 
 . build.include
-. toolchain.include
-
-src_prepare() {
-    cross_sysroot_init || return 1
-    build_src_prepare
-}
 
 src_configure() {
     :;

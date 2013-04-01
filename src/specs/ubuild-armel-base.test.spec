@@ -14,6 +14,7 @@ destination_dir = /var/tmp/ubuild_out
 env = scripts/armel/env
 image_name = ubuild_armel.test.img
 pre = scripts/pre_build.sh
+post = scripts/post_build.sh
 rootfs_dir = rootfs/
 sources_dir = sources/
 

@@ -1,0 +1,11 @@
+#!/bin/bash
+#
+# Base Ubuild scripts include. This file contains the environment variables
+# shared across all the build scripts.
+
+# @DESCRIPTION: directory in where the cross compiler toolchain is merged.
+CROSS_SYSROOT="${UBUILD_BUILD_DIR}/${CTARGET}"
+
+# @DESCRIPTION: name of the file that is created inside ${TARGET_DIR},
+# containing the value of the ${TARGET_TYPE} variable.
+TARGET_TYPE_FILE=".ubuild_target_dir_target_type"

@@ -1,9 +1,7 @@
 #!/bin/bash
 
-set -e
-
 . build.include
-. toolchain.include # ${CROSS_SYSROOT}
+. toolchain.include
 
 # @DESCRIPTION: bmake wrapper for the Linux kernel build system calls. It
 # automatically appends the cross compiler options.
@@ -26,7 +24,7 @@ src_prepare() {
     fi
 
     build_src_prepare || return 1
-    cross_setup_environment
+    cross_setup_environment || return 1
 }
 
 src_configure() {
@@ -47,6 +45,13 @@ src_compile() {
 
 src_install() {
     mkdir "${TARGET_DIR}" || return 1
+
+    mkdir "${TARGET_DIR}/boot" || return 1
+    cp "${BUILD_DIR}"/arch/arm/boot/uImage "${TARGET_DIR}/boot/" || return 1
+    cp "${BUILD_DIR}"/System.map "${TARGET_DIR}/boot/" || return 1
+    cat "${BUILD_DIR}/.config" | gzip > "${TARGET_DIR}/boot/config.gz" \
+        || return 1
+
     cd "${BUILD_DIR}" || return 1
     xkmake -j1 modules_install || return 1
 }

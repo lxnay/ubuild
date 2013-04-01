@@ -4,7 +4,6 @@
 . toolchain.include
 
 src_prepare() {
-    cross_sysroot_init || return 1
     cross_setup_environment || return 1
     build_src_prepare
 }
@@ -45,8 +44,6 @@ src_install() {
     # system headers correctly.  See gcc/doc/gccinstall.info
     mkdir -p "${TARGET_DIR}"/usr/"${CTARGET}" || return 1
     ln -snf usr/include "${TARGET_DIR}/usr/${CTARGET}/sys-include" || return 1
-
-    cross_merge_target_dir_sysroot
 }
 
 main
