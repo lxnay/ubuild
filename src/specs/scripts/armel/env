@@ -11,8 +11,17 @@ CFLAGS="-O2 -pipe -march=armv7-a -mfpu=vfpv3-d16 -mfloat-abi=softfp"
 CXXFLAGS="${CXXFLAGS}"
 LDFLAGS="-Wl,-O1 -Wl,--as-needed"
 
-# Linux kernel configuration, set either KERNEL_DEFCONFIG or KERNEL_CONFIG
+export CFLAGS CXXFLAGS LDFLAGS MAKEOPTS
+
+# Linux kernel configuration, either set KERNEL_DEFCONFIG or KERNEL_CONFIG
 KERNEL_DEFCONFIG=""
 KERNEL_CONFIG="../kernel/armv7_config"
 
-export CFLAGS CXXFLAGS LDFLAGS MAKEOPTS KERNEL_DEFCONFIG KERNEL_CONFIG
+export KERNEL_DEFCONFIG KERNEL_CONFIG
+
+# Busybox configuration, either set BUSYBOX_DEFCONFIG or BUSYBOX_CONFIG
+BUSYBOX_DEFCONFIG=""
+BUSYBOX_CONFIG="../busybox/config"
+BUSYBOX_MD5=$(md5sum "${BUSYBOX_CONFIG}")
+
+export BUSYBOX_DEFCONFIG BUSYBOX_CONFIG BUSYBOX_MD5

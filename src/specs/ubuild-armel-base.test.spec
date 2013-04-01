@@ -78,3 +78,11 @@ build = scripts/build_pkg_kernel.sh
 cache_vars = KERNEL_DEFCONFIG KERNEL_CONFIG
 sources = linux-3.7.10
 url = http://www.kernel.org/pub/linux/kernel/v3.x/linux-3.7.10.tar.xz
+
+[pkg=busybox]
+build = scripts/build_pkg_busybox.sh
+cache_vars = BUSYBOX_DEFCONFIG BUSYBOX_CONFIG BUSYBOX_MD5
+patch = patches/busybox/busybox-1.20.2-glibc-sys-resource.patch
+patch = patches/busybox/busybox-1.7.4-signal-hack.patch
+sources = busybox-1.20.2
+url = http://www.busybox.net/downloads/busybox-1.20.2.tar.bz2
