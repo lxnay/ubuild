@@ -767,8 +767,11 @@ class UbuildCache(object):
         entry_path = self._generate_entry_name(
             tarball_names, builds, patches, environment)
 
-        args = ("tar", "-c", "-J", "-p", "-f", entry_path, "./")
+        tmp_entry_path = entry_path + ".tmp"
+        args = ("tar", "-c", "-J", "-p", "-f", tmp_entry_path, "./")
         exit_st = subprocess.call(args, cwd=image_dir)
+        if exit_st == 0:
+            os.rename(tmp_entry_path, entry_path)
         return exit_st
 
     def unpack(self, unpack_dir, cache_file):
