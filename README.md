@@ -90,8 +90,8 @@ typical .ini files one, with the following improvements:
 This is the list of the initial configuration file parameters
 supported by the ubuild:
 
-  [x]  General configuration parameters, to be defined under the
-  [ubuild] section:
+*  General configuration parameters, to be defined under the
+[ubuild] section:
 
   1.  **rootfs_dir**: the base root filesystem directory, containing the
   base set of files that are expected to be found in the final
@@ -173,8 +173,8 @@ supported by the ubuild:
   defined. Exported as environment variable: UBUILD\_IMAGE\_NAME.
 
 
-  [x]  For building the initial cross compiler, to be defined under the [cross=]
-  section:
+*  For building the initial cross compiler, to be defined under the [cross=]
+section:
 
   1.  section header [cross=]: target is the name of the build target,
   exported to the build script via the UBUILD\_TARGET\_NAME environment
@@ -227,7 +227,7 @@ supported by the ubuild:
   zero exit status or the ubuild execution will be aborted.
 
 
-  [x]  For building binaries with the cross compiler:
+*  For building binaries with the cross compiler:
 
   1.  section header [pkg=]: target is the name of the build target,
   exported to the build script via the UBUILD\_TARGET\_NAME environment
@@ -237,7 +237,7 @@ supported by the ubuild:
   [cross=] section.
 
 
-  [x]  For building the final image:
+*  For building the final image:
 
   1.  build_image: a path pointing to a script (including its arguments)
   that will be executed to produce the final image. This script must
