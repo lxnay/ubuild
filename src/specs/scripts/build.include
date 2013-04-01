@@ -238,7 +238,7 @@ main() {
     S="${WORKDIR}/${UBUILD_SOURCES}"
     BUILD_DIR="${WORKDIR}/build"
     T="${WORKDIR}/temp"
-    PATCH_LOG="${T}/build.log"
+    PATCH_LOG="${T}/patch.log"
 
     export TMPDIR="${T}"
     echo
