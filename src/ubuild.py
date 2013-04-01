@@ -1154,8 +1154,8 @@ class Ubuild(object):
             file_env = self._env_source(env_f)
             cross_env.update(file_env)
 
-        args = metadata.get("cross_pre")
-        if args:
+        cross_pre = metadata.get("cross_pre", [])
+        for args in cross_pre:
             exit_st = self._pre_post_build(args, cross_env)
             if exit_st != 0:
                 return exit_st
@@ -1167,8 +1167,8 @@ class Ubuild(object):
             if exit_st != 0:
                 return exit_st
 
-        args = metadata.get("cross_post")
-        if args:
+        cross_post = metadata.get("cross_post", [])
+        for args in cross_post:
             exit_st = self._pre_post_build(args, cross_env)
             if exit_st != 0:
                 return exit_st
@@ -1182,8 +1182,8 @@ class Ubuild(object):
             file_env = self._env_source(env_f)
             env.update(file_env)
 
-        args = metadata.get("pre")
-        if args:
+        pre = metadata.get("pre", [])
+        for args in pre:
             exit_st = self._pre_post_build(args, env)
             if exit_st != 0:
                 return exit_st
@@ -1195,15 +1195,16 @@ class Ubuild(object):
             if exit_st != 0:
                 return exit_st
 
-        args = metadata.get("post")
-        if args:
+        post = metadata.get("post", [])
+        for args in post:
             exit_st = self._pre_post_build(args, env)
             if exit_st != 0:
                 return exit_st
 
+        build_env = self._setup_environment(base_env)
         args = self._spec.build_image()
         if args:
-            exit_st = self._pre_post_build(args, env)
+            exit_st = self._pre_post_build(args, build_env)
             if exit_st != 0:
                 return exit_st
 
