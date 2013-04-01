@@ -75,7 +75,7 @@ url = http://ftp.gnu.org/gnu/gcc/gcc-4.7.2/gcc-4.7.2.tar.bz2
 
 [pkg=kernel]
 build = scripts/build_pkg_kernel.sh
-cache_vars = KERNEL_DEFCONFIG KERNEL_CONFIG
+cache_vars = KERNEL_DEFCONFIG KERNEL_CONFIG KERNEL_MD5
 sources = linux-3.7.10
 url = http://www.kernel.org/pub/linux/kernel/v3.x/linux-3.7.10.tar.xz
 
