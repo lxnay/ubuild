@@ -239,7 +239,7 @@ section:
 
 *  For building the final image:
 
-  1.  build_image: a path pointing to a script (including its arguments)
+  1.  **build_image**: a path pointing to a script (including its arguments)
   that will be executed to produce the final image. This script must
   respect the UBUILD\_IMAGE\_NAME and UBUILD\_DESTINATION\_DIR
   environment variables.
@@ -261,26 +261,30 @@ towards working images for the BeagleBoard and PandaBoard.
 In order to speedup the build process, the ubuild core provides a
 transparent, coarse-grained caching system. However, only the most
 important variables are considered in the cache key, thus for cache
-validation: only the variables defined in the cache_variables
+validation: only the variables defined in the cache_vars
 parameter and some other internal ones are used to generate the cache
 key. The lookup process works like this:
 
   1.  The environment files are parsed and environment variables
-  retrieved. This list is filtered basing on cache_variables. Internal
+  retrieved. This list is filtered basing on cache_vars. Internal
   variables are added to the list, with their values.
 
   2.  A SHA1 checksum is generated using the list of filtered variables
   generated in the previous step.
 
-  3.  A file starting with the given hash and ending with the tarball
-  name is searched into cache_dir.
+  3.  Other parameters defined in the target to be cached are considered
+  as part o the key generation. Patches are read and checksummed, same
+  for build scripts.
 
-If the file is found, it will be uncompressed into the appropriate
-location (depending if the tarball is coming either from
-cross\_pkg\_build or pkg_build).
+  4.  A file starting with the tarball file names (those declared in
+  "url" parameters) and ending with the generated SHA1 + .tar.xz are
+  searched into cache_dir.
+
+If the file is found, it will be uncompressed into **build_dir*, otherwise:
 
   1.  If the file is not found, the build script is called.
   2.  If the build script completes successfully, the outcome of the
-  build is compressed and saved into cache_dir with the cache file
+  build (content that the build script copied into UBUILD_IMAGE_DIR)
+  is compressed and saved into cache_dir with the cache file
   name previously generated. The outcome is then moved to its final
   destination.
