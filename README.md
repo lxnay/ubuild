@@ -280,7 +280,7 @@ key. The lookup process works like this:
   "url" parameters) and ending with the generated SHA1 + .tar.xz are
   searched into cache_dir.
 
-If the file is found, it will be uncompressed into **build_dir*, otherwise:
+If the file is found, it will be uncompressed into **build_dir**, otherwise:
 
   1.  If the file is not found, the build script is called.
   2.  If the build script completes successfully, the outcome of the
