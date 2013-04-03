@@ -1,0 +1,253 @@
+#!/bin/sh
+# Losely based on the RC Script for Tiny Core Linux
+# (c) Robert Shingledecker 2004-2012
+
+# ANSI COLORS
+CRE="$(echo -e '\r\033[K')"
+RED="$(echo -e '\033[1;31m')"
+GREEN="$(echo -e '\033[1;32m')"
+YELLOW="$(echo -e '\033[1;33m')"
+BLUE="$(echo -e '\033[1;34m')"
+MAGENTA="$(echo -e '\033[1;35m')"
+CYAN="$(echo -e '\033[1;36m')"
+WHITE="$(echo -e '\033[1;37m')"
+NORMAL="$(echo -e '\033[0;39m')"
+
+
+VERSION=0.1
+HOSTNAME=sfingi_vr
+USER="myself"
+PASSWD="sfingi"
+
+setup_home(){
+  yes n | cp -ai /etc/skel/. /home/"$USER"/ 2>/dev/null
+  chown -Rh "$USER".staff /home/"$USER"
+  chmod g+s /home/"$USER"
+}
+
+
+
+add_user(){
+  ID=$(echo $(ls -ld /etc) | cut -d ' ' -f 3)
+  echo -n "${BLUE}Adding user ${YELLOW} $1 ($ID) ${NORMAL}"
+  /bin/adduser -s /bin/sh -G staff -u $ID -D "$USER" > /dev/null
+  echo "$1":$2 | /sbin/chpasswd -m > /dev/null
+  echo -e "$1\tALL=NOPASSWD: ALL" >> /etc/sudoers
+  setup_home
+  echo "${GREEN}Done.${NORMAL}"
+}
+
+start_mdev() {
+  echo -n "${BLUE}Starting mdev daemon for hotplug support...${NORMAL}"
+  echo /sbin/mdev_wrap.sh > /proc/sys/kernel/hotplug
+  mdev -s
+  wait $!
+  echo "${GREEN}Done.${NORMAL}"
+
+  echo -n "${BLUE}Loading kernel modules...${NORMAL}"
+  ALIASES=$(find /sys/devices -name modalias)
+  for A in $ALIASES
+   do
+    MOD=$(grep -v cpu $A)
+    if [ x$MOD != x ]
+     then
+      echo -n "${YELLOW} $MOD ${NORMAL}"
+      /sbin/modprobe -- $MOD 2>/dev/null
+     fi
+   done
+  echo "${GREEN}Done.${NORMAL}"
+}
+
+generate_fstab() {
+  echo "${BLUE}Scanning hard disk partitions to create ${YELLOW}/etc/fstab ${NORMAL}"
+  modprobe scsi_wait_scan 2>/dev/null
+  /sbin/rebuildfstab & fstab_pid=$!
+}
+
+setup_base_fs() {
+  # First, mount /proc (otherwise "mount -o remount..." might generate some (harmless?) errors, trying to access /proc/mounts
+  /bin/mount -t proc proc /proc
+
+  # Then, remount the rootfs read-write
+  /bin/mount -o remount,rw /
+
+  mkdir /sys
+  mkdir /tmp
+  mkdir /home
+  mkdir /opt
+  mkdir -p /dev/pts
+  mkdir -p /dev/shm
+  mkdir -p /var/run
+  mkdir -p /var/log
+  mkdir -p /var/tmp
+  chmod a+rw /tmp
+  echo "Sfingi VR" > /etc/issue
+
+  ln -s         /proc/mounts /etc/mtab
+  /bin/mount -a
+}
+
+find_mountpoint() {
+ MOUNTPOINT=""
+ MOUNTED="no"
+ D2="$1"
+ if [ "${D2:0:6}" == "LABEL=" ]; then
+   LABEL=$(echo $D2 | cut -d '=' -f 2)
+   D2=$(/sbin/blkid | grep LABEL= | grep $LABEL | cut -d ':' -f 1) 
+   if [ "$?" != 0 ]; then
+     MOUNTPOINT=""
+     return
+   else
+     D2="${D2%%:*}"
+   fi
+ else
+   D2=/dev/$D2
+ fi
+ MOUNTPOINT="$(grep -i ^$D2\  /etc/mtab|awk '{print $2}'|head -n 1)"
+ if [ -n "$MOUNTPOINT" ]; then
+   MOUNTED="yes"
+   return
+ fi
+
+ MOUNTPOINT="$(grep -i ^$D2\  /etc/fstab|awk '{print $2}'|head -n 1)"
+}
+
+mount_partition() {
+  PARTITION_DESC=$1
+  wait $fstab_pid
+  PARTITION=${PARTITION_DESC##/dev/}
+  find_mountpoint "$PARTITION"
+  if [ -n "$MOUNTPOINT" ];
+   then
+    [ "$MOUNTED" == "yes" ] || mount "$MOUNTPOINT"
+    mount --bind "$MOUNTPOINT"$2 $2
+    chmod g+s $2 >/dev/null 2>&1
+   else
+    echo "Invalid device $1 specified. Skipping mount $2!"
+   fi
+}
+
+### END functions
+
+# Main
+clear
+echo "${GREEN}Booting ${YELLOW}Core $VERSION ${NORMAL}"
+
+setup_base_fs
+
+KERNEL="$(uname -r)"
+echo "${GREEN}Running Linux Kernel ${YELLOW}$KERNEL${GREEN}.${NORMAL}"
+export PATH=/usr/local/sbin:/usr/local/bin:"$PATH"
+
+# Here we check all the boot parameters using the fastest way known to men, case & loop
+echo -n "${BLUE}Checking boot options...${NORMAL}"
+for i in `cat /proc/cmdline`; do
+	case $i in
+		*=*)
+			case $i in
+				waitusb*)    WAITUSB=${i#*=} ;;
+				user*)       USER=${i#*=} ;;
+				host*)       HOSTNAME=${i#*=} ;;
+				home*)       MYHOME=${i#*=} ;;
+				opt*)        MYOPT=${i#*=} ;;
+				mydata* )    MYDATA=${i#*=} ;;
+				blacklist* ) BLACKLIST="$BLACKLIST ${i#*=}" ;;
+			esac
+		;;
+		*)
+			case $i in
+				text) TEXT=1 ;;
+				superuser) SUPERUSER=1 ;;
+				pause) PAUSE=1 ;;
+			esac
+		;;
+	esac
+done
+echo "${GREEN}Done.${NORMAL}"
+
+if [ -n "$BLACKLIST" ]; then
+	mkdir -p /etc/modprobe.d
+	for i in $BLACKLIST; do
+		echo "$i" | tr ',' '\n' | while read j ; do
+			echo "blacklist $j" >> /etc/modprobe.d/blacklist.conf
+		done
+	done
+fi
+
+start_mdev
+
+[ -n "$WAITUSB" ] && ( sleep "$WAITUSB" )
+
+modprobe loop 2>/dev/null
+
+generate_fstab
+
+LANGUAGE="C"
+[ -f /etc/sysconfig ] || mkdir /etc/sysconfig
+echo "LANG=$LANGUAGE" > /etc/sysconfig/language
+
+echo -n "${BLUE}Waiting for RTC..."
+while [ ! -e /dev/rtc0 ]; do usleep 50000; done
+echo "${GREEN} Done.${NORMAL}"
+if [ -n "$NOUTC" ]; then
+	 hwclock -l -s &
+else
+	 hwclock -u -s &
+fi
+
+/bin/hostname $HOSTNAME
+
+/sbin/ifconfig lo 127.0.0.1 up
+/sbin/route add 127.0.0.1 lo &
+
+chown root:root /bin/busybox /bin/sudo /etc/sudoers
+chmod u+s  /bin/busybox /bin/sudo
+
+touch /var/tmp/k5_skip
+
+/sbin/ldconfig 2>/dev/null
+
+[ -n "$TEXT" ] && touch /etc/sysconfig/text
+
+add_user $USER $PASSWD
+mkdir -p /home/"$USER"
+echo "$USER" > /etc/sysconfig/user
+
+if [ -n "$SUPERUSER" ]; then
+	touch /etc/sysconfig/superuser
+fi
+    	   
+if [ -n "$MYHOME" ]; then
+  mount_partition $MYHOME /home
+fi
+
+if [ -n "$MYOPT" ]; then
+  mount_partition $MYOPT /opt/
+  yes n | cp -ai /opt/. "$MOUNTPOINT"/opt/ 2>/dev/null
+  [ -d "$MOUNTPOINT"/opt ] || mkdir "$MOUNTPOINT"/opt
+  chgrp -R staff /opt/ >/dev/null 2>&1
+  chmod -R g+w /opt/ >/dev/null 2>&1
+fi
+
+wait $fstab_pid
+
+KEYMAP="us"
+if [ -f "/usr/share/kmap/$KEYMAP.kmap" ]; then
+	echo -n "${GREEN}Setting keymap to ${MAGENTA}$KEYMAP"
+	/sbin/loadkmap < /usr/share/kmap/$KEYMAP.kmap
+	echo "KEYMAP=$KEYMAP" > /etc/sysconfig/keymap
+	echo "${GREEN} Done.${NORMAL}"
+fi
+
+chmod a+rw /dev/null
+chmod a+rw /dev/zero
+
+/opt/bootlocal.sh
+sleep 5
+
+[ -n "$NOAUTOLOGIN" ] && echo "booting" > /etc/sysconfig/noautologin
+
+if [ -n "$PAUSE" ]; then
+	echo -n "${BLUE}Boot time configuration completed. Press <Enter> to continue.${NORMAL}"
+	read junk
+fi

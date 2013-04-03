@@ -3,7 +3,7 @@
 
 [ubuild]
 build_dir = /var/tmp/ubuild_build
-build_image = scripts/build_image.sh armel
+build_image = scripts/build_image.sh
 cache_dir = cache/
 cache_vars = ARCH ABI GMPABI CROSS_SYSROOT
 cache_vars = CFLAGS CPPFLAGS CXXFLAGS LDFLAGS
@@ -12,6 +12,7 @@ cross_env = scripts/armel/cross_env
 cross_post = scripts/cross_post_build.sh
 destination_dir = /var/tmp/ubuild_out
 env = scripts/armel/env
+env = scripts/armel/beaglebone_env
 image_name = ubuild_armel.test.img
 pre = scripts/pre_build.sh
 post = scripts/post_build.sh
@@ -79,17 +80,19 @@ cache_vars = KERNEL_DEFCONFIG KERNEL_CONFIG KERNEL_MD5
 sources = linux-3.7.10
 url = http://www.kernel.org/pub/linux/kernel/v3.x/linux-3.7.10.tar.xz
 
+[pkg=u-boot]
+build = scripts/build_pkg_u-boot.sh
+cache_vars = UBOOT_DEFCONFIG UBOOT_UENV
+post = scripts/post_build_uEnv.sh
+sources = u-boot-2013.01.01
+url = git://git.denx.de/u-boot.git@v2013.01.01 u-boot-2013.01.01.tar.gz
+
 [pkg=busybox]
 build = scripts/build_pkg_busybox.sh
 cache_vars = BUSYBOX_DEFCONFIG BUSYBOX_CONFIG BUSYBOX_MD5
 patch = patches/busybox/busybox-1.20.2-glibc-sys-resource.patch
 patch = patches/busybox/busybox-1.7.4-signal-hack.patch
+post = scripts/post_build_initramfs.sh
 sources = busybox-1.20.2
 url = http://www.busybox.net/downloads/busybox-1.20.2.tar.bz2
 
-[pkg=u-boot]
-build = scripts/build_pkg_u-boot.sh
-env = scripts/armel/beaglebone_env
-cache_vars = UBOOT_DEFCONFIG
-sources = u-boot-2013.01.01
-url = git://git.denx.de/u-boot.git@v2013.01.01 u-boot-2013.01.01.tar.gz
