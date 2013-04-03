@@ -1,5 +1,5 @@
 # This is an ubuild .spec file that aims to create
-# an armel (armv7, softfp) image.
+# an armel (armv7, softfp) image for the BeagleBone
 
 [ubuild]
 build_dir = /var/tmp/ubuild_build
@@ -86,3 +86,10 @@ patch = patches/busybox/busybox-1.20.2-glibc-sys-resource.patch
 patch = patches/busybox/busybox-1.7.4-signal-hack.patch
 sources = busybox-1.20.2
 url = http://www.busybox.net/downloads/busybox-1.20.2.tar.bz2
+
+[pkg=u-boot]
+build = scripts/build_pkg_u-boot.sh
+env = scripts/armel/beaglebone_env
+cache_vars = UBOOT_DEFCONFIG
+sources = u-boot-2013.01.01
+url = git://git.denx.de/u-boot.git@v2013.01.01 u-boot-2013.01.01.tar.gz
