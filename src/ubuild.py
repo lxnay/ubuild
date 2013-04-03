@@ -1036,8 +1036,8 @@ class Ubuild(object):
             "Setting UBUILD_SOURCES='%s'", target_sources_dir)
         env["UBUILD_SOURCES"] = target_sources_dir
 
-        args = metadata.get("pre")
-        if args:
+        pre = metadata.get("pre", [])
+        for args in pre:
             exit_st = self._pre_post_build(args, env)
             if exit_st != 0:
                 return exit_st
@@ -1121,11 +1121,11 @@ class Ubuild(object):
                 if image_dir is not None:
                     shutil.rmtree(image_dir, True)
 
-            args = metadata.get("post")
-            if args:
-                exit_st = self._pre_post_build(args, env)
-                if exit_st != 0:
-                    return exit_st
+        post = metadata.get("post", [])
+        for args in post:
+            exit_st = self._pre_post_build(args, env)
+            if exit_st != 0:
+                return exit_st
 
         self._logger.info("")
 
