@@ -1,0 +1,5 @@
+#!/bin/bash
+
+UBOOT_DEFCONFIG="am335x_evm_config" # or omap3_beagle_config
+
+export UBOOT_DEFCONFIG
