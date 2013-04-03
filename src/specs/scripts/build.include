@@ -27,6 +27,42 @@ IMAGE_TARGET_DIR="${UBUILD_IMAGE_DIR}/${PN}"
 # @DESCRIPTION: internal variable used to accumulate downloaded tarball paths
 ARCHIVES=()
 
+# @DESCRIPTION: download an URL using wget.
+# @USAGE: _wget_url <url> <save path>
+_wget_url() {
+    local url="${1}"
+    local archive="${2}"
+    wget "${url}" -O "${archive}" || {
+        rm -f "${archive}";
+        return 1;
+    }
+}
+
+_git_url() {
+    local url="${1}"
+    local archive="${2}"
+    local git_repos_dir="${UBUILD_BUILD_DIR}/git-repos"
+    local git_repo_dir="${git_repos_dir}/${TARGET_TYPE}.${PN}/${UBUILD_SOURCES}"
+
+    local base_url=$(basename "${url}")
+    local refname=$(echo "${base_url}" | grep -o "@.*$" | sed "s:^@::")
+    if [ -n "${refname}" ]; then
+        # rewrite url then
+        url="${url%%@${refname}}"
+    fi
+
+    mkdir -p "${git_repo_dir}" || return 1
+    git clone "${url}" "${git_repo_dir}" || return 1
+    (
+        if [ -n "${refname}" ]; then
+            cd "${git_repo_dir}" || exit 1
+            git checkout "${refname}" || exit 1
+        fi
+        cd "${git_repo_dir}"/.. || exit 1
+        tar -c -a -p -f "${archive}" ./ || exit 1
+    ) || return 1
+}
+
 # @DESCRIPTION: fetch the source tarballs defined in ${UBUILD_SRC_URI}
 # @USAGE: build_src_fetch
 build_src_fetch() {
@@ -43,11 +79,15 @@ build_src_fetch() {
         archive="${UBUILD_SOURCES_DIR}/${rename}"
 
         if [ ! -f "${archive}" ]; then
-            echo "Starting to download ${archive}"
-            wget "${url}" -O "${archive}" || {
-                rm -f "${archive}";
-                return 1;
-            }
+            echo -n "Starting to download ${url}"
+            if [ -n "$(echo ${url} | grep ^git)" ]; then
+                echo " using git ..."
+                _git_url "${url}" "${archive}" || return 1
+            else
+                echo " using wget ..."
+                # fallback to wget
+                _wget_url "${url}" "${archive}" || return 1
+            fi
         else
             local sha1=$(sha1sum "${archive}")
             echo "${archive} already there, SHA1: ${sha1}"
