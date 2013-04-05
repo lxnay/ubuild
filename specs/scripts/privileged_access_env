@@ -1,0 +1,9 @@
+#!/bin/bash
+# This environment file contains variables used to gain
+# superuser privileges if ubuild is not running as root.
+
+# @DESCRIPTION: prefix to commands needing privileged access
+# such as `mount`.
+PRIV_AGENT="sudo -E"
+
+export PRIV_AGENT

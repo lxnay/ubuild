@@ -3,7 +3,7 @@
 
 [ubuild]
 build_dir = /var/tmp/ubuild_build
-build_image = scripts/build_image.sh
+build_image = scripts/build_image.sh .xz
 cache_dir = cache/
 cache_vars = ARCH ABI GMPABI CROSS_SYSROOT
 cache_vars = CFLAGS CPPFLAGS CXXFLAGS LDFLAGS
@@ -13,7 +13,8 @@ cross_post = scripts/cross_post_build.sh
 destination_dir = /var/tmp/ubuild_out
 env = scripts/armel/env
 env = scripts/armel/beaglebone_env
-image_name = ubuild_armel.test.img
+env = scripts/privileged_access_env
+image_name = ubuild_armel.test.img.xz
 pre = scripts/pre_build.sh
 post = scripts/post_build.sh
 rootfs_dir = rootfs/
