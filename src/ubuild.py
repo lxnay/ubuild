@@ -63,22 +63,25 @@ class _SpecParser(dict):
     # Must be a list of supported statement keys.
     _SUPPORTED_KEYS = None
 
-    def __init__(self, encoding = None):
+    def __init__(self, spec_file, encoding = None):
         super(_SpecParser, self).__init__()
         self._encoding = encoding
         self._logger = logging.getLogger("ubuild.SpecParser")
         self._ordered_sections = []
+        self._spec_file = spec_file
 
-    def read(self, files):
+    def read(self):
         """
         Read the given list of configuration file paths and populate
         the repository metadata.
-
-        Args:
-          files: configuration file paths.
         """
-        for path in files:
-            self._parse(path)
+        self._parse(self._spec_file)
+
+    def path(self):
+        """
+        Return the .spec file path.
+        """
+        return os.path.abspath(self._spec_file)
 
     def _parse(self, path):
         """
@@ -242,8 +245,8 @@ class SpecParser(_SpecParser):
                 "missing parameters")
             self.params = params
 
-    def __init__(self):
-        super(SpecParser, self).__init__(encoding="UTF-8")
+    def __init__(self, spec_file):
+        super(SpecParser, self).__init__(spec_file, encoding="UTF-8")
 
         target_keys = {
             "build": self._mangle_argv0_executable,
@@ -297,14 +300,14 @@ class SpecParser(_SpecParser):
             "^pkg=.*": target_vital,
         }
 
-    def read(self, files):
+    def read(self):
         """
         Overrides _SpecParser.read(), adds metadata validation.
 
         Raises:
             SpecParser.MissingParametersError: when a parameter is missing.
         """
-        super(SpecParser, self).read(files)
+        super(SpecParser, self).read()
         self._validate()
 
     @classmethod
@@ -848,6 +851,7 @@ class Ubuild(object):
         """
         env = base_env.copy()
         env_keys = (
+            ("UBUILD_SPEC_PATH", "path"),
             ("UBUILD_BUILD_DIR", "build_dir"),
             ("UBUILD_ROOTFS_DIR", "rootfs_dir"),
             ("UBUILD_SOURCES_DIR", "sources_dir"),
@@ -896,9 +900,13 @@ class Ubuild(object):
                 prefix="ubuild._source")
 
             env_dir = os.path.dirname(env_file)
+            env_env = self._setup_environment({})
             exit_st = subprocess.call(
-                args, stdout=tmp_fd, env={}, cwd=env_dir)
+                args, stdout=tmp_fd, env=env_env, cwd=env_dir)
             if exit_st != 0:
+                self._logger.error(
+                    "[%s] error sourcing env file: %s, exit status: %d",
+                    self._spec_name, env_file, exit_st)
                 return None
 
             # this way buffers are flushed out
@@ -1002,6 +1010,11 @@ class Ubuild(object):
                 "[%s] reading package env: %s",
                 self._spec_name, env_f)
             file_env = self._env_source(env_f)
+            if file_env is None:
+                self._logger.error(
+                    "[%s] cannot source env file: %s",
+                    self._spec_name, env_f)
+                return 1
             env.update(file_env)
 
         scripts = metadata["build"]
@@ -1157,6 +1170,11 @@ class Ubuild(object):
                 "[%s] reading cross_env: %s",
                 self._spec_name, env_f)
             file_env = self._env_source(env_f)
+            if file_env is None:
+                self._logger.error(
+                    "[%s] cannot source env file: %s",
+                    self._spec_name, env_f)
+                return 1
             cross_env.update(file_env)
 
         cross_pre = metadata.get("cross_pre", [])
@@ -1185,6 +1203,11 @@ class Ubuild(object):
                 "[%s] reading env: %s",
                 self._spec_name, env_f)
             file_env = self._env_source(env_f)
+            if file_env is None:
+                self._logger.error(
+                    "[%s] cannot source env file: %s",
+                    self._spec_name, env_f)
+                return 1
             env.update(file_env)
 
         pre = metadata.get("pre", [])
@@ -1244,9 +1267,9 @@ def main(argv):
     specs = []
     exit_st = 0
     for spec_f in nsargs.spec:
-        parser = SpecParser()
+        parser = SpecParser(spec_f.name)
         try:
-            parser.read([spec_f.name])
+            parser.read()
         except SpecParser.MissingParametersError as err:
             sys.stderr.write("Missing parameters in %s:\n" % (spec_f.name,))
             for param in err.params:

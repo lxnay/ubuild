@@ -63,8 +63,8 @@ class UbuildSpecTest(unittest.TestCase):
                 spec_f.write(content)
             spec_tmp_fd = None
 
-            parser = ubuild.SpecParser()
-            parser.read([spec_tmp_path])
+            parser = ubuild.SpecParser(spec_tmp_path)
+            parser.read()
 
             def _repl_list(l):
                 new_l = []
