@@ -1,0 +1,10 @@
+#!/bin/bash
+
+# Busybox configuration, either set BUSYBOX_DEFCONFIG or BUSYBOX_CONFIG
+BUSYBOX_DEFCONFIG=""
+BUSYBOX_CONFIG="${_SPEC_DIR}/busybox/config"
+BUSYBOX_MD5=$(md5sum "${BUSYBOX_CONFIG}")
+if [ -z "${BUSYBOX_MD5}" ]; then
+    exit 1
+fi
+export BUSYBOX_DEFCONFIG BUSYBOX_CONFIG BUSYBOX_MD5

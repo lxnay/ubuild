@@ -3,13 +3,13 @@
 _SPEC_DIR=$(dirname "${UBUILD_SPEC_PATH}")
 
 # These are needed by GCC
-ARCH="arm" # armv7a ?
+ARCH="armv7a"
 ABI="gnueabi"
-CTARGET="${ARCH}-unknown-linux-${ABI}"
+CTARGET="${ARCH}-hardfloat-linux-${ABI}"
 export ARCH ABI CTARGET
 
 MAKEOPTS="-j 5"
-CFLAGS="-O2 -pipe -march=armv7-a -mfpu=vfpv3-d16 -mfloat-abi=softfp"
+CFLAGS="-O2 -pipe -march=armv7-a -mfpu=vfpv3-d16 -mfloat-abi=hard"
 CXXFLAGS="${CXXFLAGS}"
 LDFLAGS="-Wl,-O1 -Wl,--as-needed"
 

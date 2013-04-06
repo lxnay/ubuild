@@ -1,0 +1,10 @@
+#!/bin/bash
+
+# This is a subdirectory of UBUILD_BUILD_DIR where busybox is placed
+# after compilation (it's the pkg=busybox target)
+UBUILD_BUSYBOX_TARGET="busybox"
+# This is a subdirectory of UBUILD_BUILD_DIR where busybox is placed
+# after compilation (it's the pkg=kernel target)
+UBUILD_KERNEL_TARGET="kernel"
+
+export UBUILD_BUSYBOX_TARGET UBUILD_KERNEL_TARGET

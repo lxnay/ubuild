@@ -1,9 +1,9 @@
 #!/bin/bash
 
 # These are needed by GCC
-ARCH="arm"
+ARCH="armv7a"
 ABI="gnueabi"
-CTARGET="${ARCH}-unknown-linux-${ABI}"
+CTARGET="${ARCH}-hardfloat-linux-${ABI}"
 export ARCH ABI CTARGET
 
 MAKEOPTS="-j 5"
@@ -12,6 +12,6 @@ CXXFLAGS="${CXXFLAGS}"
 LDFLAGS="-Wl,-O1 -Wl,--as-needed"
 
 # ARM specific flags
-GCC_CONFIGURE_ARGS="--with-arch=armv7-a --with-float=soft"
+GCC_CONFIGURE_ARGS="--with-arch=armv7-a --with-fpu=vfpv3-d16 --with-float=hard"
 
 export CFLAGS CXXFLAGS LDFLAGS MAKEOPTS GCC_CONFIGURE_ARGS
