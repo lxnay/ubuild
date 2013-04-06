@@ -396,6 +396,7 @@ class SpecParser(_SpecParser):
             "^ubuild$": {
                 "build_dir": 1,
                 "build_image": 1,
+                "cache_dir": 1,
                 "destination_dir": 1,
                 "image_name": 1,
                 "rootfs_dir": 1,
