@@ -880,9 +880,9 @@ class Ubuild(object):
         Returns:
           an environment dict.
         """
-        env_sourcer = os.path.join(
+        env_sourcer = os.path.abspath(os.path.join(
             os.path.dirname(__file__),
-            "core", "env_sourcer.sh")
+            "core", "env_sourcer.sh"))
         assert os.path.isfile(env_sourcer)
 
         self._logger.info(
@@ -895,7 +895,9 @@ class Ubuild(object):
                 dir=self._spec.build_dir(),
                 prefix="ubuild._source")
 
-            exit_st = subprocess.call(args, stdout=tmp_fd, env={})
+            env_dir = os.path.dirname(env_file)
+            exit_st = subprocess.call(
+                args, stdout=tmp_fd, env={}, cwd=env_dir)
             if exit_st != 0:
                 return None
 
