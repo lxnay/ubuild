@@ -131,6 +131,9 @@ initramfs_generate() {
         ${PRIV_AGENT} mknod -m 660 zero c 1 5 || exit 1
         ${PRIV_AGENT} mknod -m 600 tty0 c 4 0 || exit 1
         ${PRIV_AGENT} mknod -m 600 tty1 c 4 1 || exit 1
+        ${PRIV_AGENT} mknod -m 600 tty2 c 4 2 || exit 1
+        ${PRIV_AGENT} mknod -m 600 tty3 c 4 3 || exit 1
+        ${PRIV_AGENT} mknod -m 600 tty4 c 4 4 || exit 1
         ${PRIV_AGENT} mknod -m 600 ttyS0 c 4 64 || exit 1
     ) || return 1
 
