@@ -33,6 +33,104 @@ import sys
 import tempfile
 
 
+class SpecPreprocessor(object):
+
+    PREFIX = "#"
+
+    class PreprocessorError(Exception):
+        """ Error while preprocessing file """
+
+    def __init__(self, spec_path, encoding):
+        self._spec_path = spec_path
+        self._encoding = encoding
+        self._expanders = {
+            self.PREFIX + "include": self._include_expander,
+        }
+
+    def _recursive_expand(self, line):
+        """
+        Expand supported preprocessor statements recursively.
+
+        Args:
+          line: line to parse and expand, if needed.
+
+        Returns:
+          the expanded line.
+        """
+        split_line = line.lstrip().split(None, 1)
+        if split_line:
+            expander = self._expanders.get(split_line[0])
+            if expander is not None:
+                try:
+                    line = expander(line)
+                except RuntimeError as err:
+                    raise SpecPreprocessor.PreprocessorError(
+                        "invalid preprocessor line: %s" % (err,))
+        return line
+
+    def _include_expander(self, line):
+        """
+        Expand, recursively, an #include <path> statement.
+
+        Args:
+          line: line to parse and expand, if needed.
+
+        Returns:
+          the expanded line.
+        """
+        rest_line = line.split(None, 1)[1].strip()
+        if not rest_line:
+            return line
+
+        if rest_line.startswith(os.path.sep):
+            # absolute path
+            path = rest_line
+        else:
+            path = os.path.join(os.path.dirname(self._spec_path),
+                rest_line)
+
+        if not (os.path.isfile(path) and os.access(path, os.R_OK)):
+            raise SpecPreprocessor.PreprocessorError(
+                "invalid preprocessor line: %s" % (line,))
+
+        with codecs.open(path, "r", encoding=self._encoding) as spec_f:
+            lines = None
+            for line in spec_f.readlines():
+                # call recursively
+                line = self._recursive_expand(line)
+                if lines is None:
+                    lines = line
+                else:
+                    lines += line
+
+        return lines
+
+    def parse(self):
+        """
+        Parse the file and expand all the supported preprocessor statements.
+
+        Returns:
+          the parsed file content string.
+        """
+        content = []
+        with codecs.open(self._spec_path, "r",
+                         encoding=self._encoding) as spec_f:
+            for line in spec_f.readlines():
+                line = self._recursive_expand(line)
+                content.append(line)
+
+        final_content = []
+        for line in content:
+            split_line = line.split(None, 1)
+            if split_line:
+                expander = self._expanders.get(split_line[0])
+                if expander is not None:
+                    line = expander(line)
+            final_content.append(line)
+
+        return ("".join(final_content)).split("\n")
+
+
 class _SpecParser(dict):
     """
     Ubuild .ini-like configuration file parser.
@@ -65,6 +163,8 @@ class _SpecParser(dict):
 
     def __init__(self, spec_file, encoding = None):
         super(_SpecParser, self).__init__()
+        if encoding is None:
+            encoding = "UTF-8"
         self._encoding = encoding
         self._logger = logging.getLogger("ubuild.SpecParser")
         self._ordered_sections = []
@@ -90,13 +190,18 @@ class _SpecParser(dict):
 
         Args:
           path: a configuration file path.
+
+        Raises:
+          SpecPreprocessor.PreprocessorError: if the file contains
+          invalid preprocessor staments.
         """
-        if self._encoding is None:
-            with open(path, "r") as cfg_f:
-                content = cfg_f.readlines()
-        else:
-            with codecs.open(path, "r", encoding=self._encoding) as cfg_f:
-                content = cfg_f.readlines()
+        preproc = SpecPreprocessor(path, self._encoding)
+        try:
+            content = preproc.parse()
+        except SpecPreprocessor.PreprocessorError as err:
+            self._logger.error(
+                "[%s] preprocessor error: %s", path, err)
+            raise
 
         section_name = None
         supported_keys = None
@@ -1274,6 +1379,11 @@ def main(argv):
             sys.stderr.write("Missing parameters in %s:\n" % (spec_f.name,))
             for param in err.params:
                 sys.stderr.write(" - %s\n" % (param,))
+            exit_st = 2
+            continue
+        except SpecPreprocessor.PreprocessorError as err:
+            sys.stderr.write("Preprocessor error %s in %s\n" % (
+                spec_f.name, err))
             exit_st = 2
             continue
         specs.append((parser, [spec_f.name]))
