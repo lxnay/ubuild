@@ -7,4 +7,12 @@
 root_init || exit 1
 
 # This will be moved to the vfat partition at some point
-echo "${UBOOT_UENV}" > "${WORK_ROOTFS_DIR}/boot/uEnv.txt" || exit 1
+if [ ! -e "${UBOOT_UENV}" ]; then
+    echo "${UBOOT_UENV} does not exist" >&2
+    exit 1
+fi
+echo "uEnv.txt content:"
+echo "--"
+cat "${UBOOT_UENV}"
+echo "--"
+cat "${UBOOT_UENV}" > "${WORK_ROOTFS_DIR}/boot/uEnv.txt" || exit 1

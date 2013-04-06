@@ -20,7 +20,7 @@ src_configure() {
     cd "${BUILD_DIR}" || return 1
 
     if [ -n "${BUSYBOX_CONFIG}" ]; then
-        cp "${UBUILD_PWD}/${BUSYBOX_CONFIG}" "${BUILD_DIR}/.config" || return 1
+        cp "${BUSYBOX_CONFIG}" "${BUILD_DIR}/.config" || return 1
     else
         xkmake ${KERNEL_DEFCONFIG} || return 1
     fi

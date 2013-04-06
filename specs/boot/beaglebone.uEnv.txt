@@ -1,0 +1,6 @@
+devtree=/boot/am335x-bone.dtb
+ramdiskfile=/boot/initramfs.gz
+optargs=consoleblank=0 earlyprintk=serial init=/linuxrc
+dtboot=run mmcargs; load mmc ${mmcdev}:2 ${loadaddr} ${bootfile}; load mmc ${mmcdev}:2 ${rdaddr} ${ramdiskfile}; load mmc ${mmcdev}:2 ${fdtaddr} ${devtree} ; bootm ${loadaddr} ${rdaddr} ${fdtaddr}
+uenvcmd=run dtboot
+

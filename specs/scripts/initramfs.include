@@ -1,0 +1,161 @@
+#!/bin/bash
+# Ubuild initramfs handling helper functions.
+
+if [ -z "${__UBUILD_INCLUDE_INITRAMFS}" ]; then
+
+# @DESCRIPTION: generate a cpio archive in the given path, using the
+# given directory as root directory. Always run in append mode.
+# @USAGE: make_cpio <rootfs dir> <uncompressed cpio archive destination>
+make_cpio() {
+    local rootfs="${1}"
+    local dest="${2}"
+    (
+        cd "${rootfs}" || exit 1
+        if [ ! -e "${dest}" ]; then
+            echo "Creating empty cpio at: ${dest}"
+            echo | cpio --quiet -o -H newc -F "${dest}" || exit 1
+        fi
+        find . -print | cpio --quiet -o -H newc --append -F \
+            "${dest}" || exit 1
+    ) || return 1
+}
+
+# @DESCRIPTION: generate an initramfs containing busybox and kernel
+# modules defined in ${IMAGE_INITRAMFS_MODULES} (including their
+# dependencies).
+# @USAGE: initramfs_generate <rootfs directory> <initramfs file>
+initramfs_generate() {
+    local rootfs="${1}"
+    local initramfs_file="${2}"
+    local tmp_initramfs="$(mktemp -d --suffix=tmp.initramfs)"
+
+    # copy busybox
+    local busybox_dir="${UBUILD_BUILD_DIR}/${UBUILD_BUSYBOX_TARGET}"
+    find "${busybox_dir}" -name ".ubuild*" -delete || return 1
+    rsync -avx -H -A -X "${busybox_dir}"/ "${tmp_initramfs}"/  || return 1
+
+    # copy kernel firmwares
+    local kernel_lib_dir="${UBUILD_BUILD_DIR}/${UBUILD_KERNEL_TARGET}/lib"
+    local tmp_fw_dir="${tmp_initramfs}/lib/firmware"
+    if [ "${kernel_lib_dir}" ]; then
+        mkdir -p "${tmp_fw_dir}" || return 1
+        rsync -avx -H -A -X "${kernel_lib_dir}/firmware"/ \
+            "${tmp_fw_dir}"/ || return 1
+    fi
+
+    # copy kernel modules
+    local kernel_mod_dir="${kernel_lib_dir}/modules"
+    local kernel_mod_dir_name=$(ls -1 "${kernel_mod_dir}/" | sort | head -n 1)
+
+    kernel_mod_dir="${kernel_mod_dir}/${kernel_mod_dir_name}"
+    if [ ! -d "${kernel_mod_dir}" ] || [ -z "${kernel_mod_dir_name}" ]; then
+        echo "Cannot determine the modules directory in ${kernel_mod_dir}" >&2
+        return 1
+    fi
+
+    local tmp_kernel_mods="${tmp_initramfs}/lib/modules"
+    local tmp_kernel_mod_dir="${tmp_kernel_mods}/${kernel_mod_dir_name}"
+    local kernel_modules_dep="${kernel_mod_dir}/modules.dep"
+    if [ ! -f "${kernel_modules_dep}" ]; then
+        echo "${kernel_modules_dep} not found" >&2
+        return 1
+    fi
+
+    local kext=".ko"
+    local mod_path=
+    local dep_list=
+    local m=
+    local s=
+    local d=
+    for mod in ${IMAGE_INITRAMFS_MODULES}; do
+        mod_path=$(find "${kernel_mod_dir}" -name "${mod}${kext}" \
+            -type f 2>/dev/null | sort | head -n 1)
+        if [ ! -e "${mod_path}" ]; then
+            echo "Kernel module ${mod} does not exist, skipping." >&2
+            continue
+        fi
+
+        echo "Copying kernel module ${mod_path} to initramfs"
+        tmp_mod_path="${tmp_kernel_mod_dir}/${mod_path/${kernel_mod_dir}}"
+        mkdir -p "$(dirname "${tmp_mod_path}")" || return 1
+        cp -ax "${mod_path}" "${tmp_mod_path}" || return 1
+
+        # copy dependencies
+        dep_list=(
+            $(cat "${kernel_modules_dep}" | grep "${mod}${kext}:" \
+                | cut -d":" -f2)
+        )
+        for m in "${dep_list[@]}"; do
+            s="${kernel_mod_dir}/${m}"
+            d="${tmp_kernel_mod_dir}/${m}"
+            if [ ! -e "${s}" ]; then
+                echo "${s} does not exist. Missing ${mod} dependency" >&2
+                return 1
+            fi
+            echo "${mod}${kext}: Copying dependency: ${s}"
+            mkdir -p "$(dirname "${d}")" || return 1
+            cp -ax "${s}" "${d}" || return 1
+        done
+    done
+
+    # copy sysvinit stuff
+    local empty_dirs=(
+        "dev"
+        "bin"
+        "etc"
+        "usr"
+        "lib"
+        "mnt"
+        "run"
+        "sbin"
+        "proc"
+        "tmp"
+        "sys"
+        "sbin"
+        "usr/bin"
+        "usr/sbin"
+    )
+    for d in "${empty_dirs[@]}"; do
+        mkdir -p "${tmp_initramfs}/${d}" || return 1
+    done
+
+    echo "/dev/ram0 / ext2 defaults 0 0" > "${tmp_initramfs}"/etc/fstab \
+        || return 1
+    echo "proc /proc proc defaults 0 0" >> "${tmp_initramfs}"/etc/fstab \
+        || return 1
+
+    (
+        cd "${tmp_initramfs}/dev" || exit 1
+        ${PRIV_AGENT} mknod -m 660 console c 5 1 || exit 1
+        ${PRIV_AGENT} mknod -m 660 null c 1 3 || exit 1
+        ${PRIV_AGENT} mknod -m 660 zero c 1 5 || exit 1
+        ${PRIV_AGENT} mknod -m 600 tty0 c 4 0 || exit 1
+        ${PRIV_AGENT} mknod -m 600 tty1 c 4 1 || exit 1
+        ${PRIV_AGENT} mknod -m 600 ttyS0 c 4 64 || exit 1
+    ) || return 1
+
+    # eventually make the cpio archive
+    make_cpio "${tmp_initramfs}" "${initramfs_file}" || return 1
+}
+
+# @DESCRIPTION: compress an initramfs using gzip
+# @USAGE: initramfs_gzip <source> <gzipped dest>
+initramfs_gzip() {
+    local s="${1}"
+    local d="${2}"
+    gzip -c "${s}" > "${d}"
+}
+
+# @DESCRIPTION: prepend the u-boot header to an initramfs file.
+# @USAGE: initramfs_u-bootize <initramfs path>
+initramfs_u-bootize() {
+    local ramfs="${1}"
+
+    mkimage -A arm -O linux -T ramdisk -C none -a "${UBOOT_RAMDISK_ADDRESS}" \
+        -e "${UBOOT_RAMDISK_ENTRYPOINT}" -d "${ramfs}" \
+        "${ramfs}.u-boot" || exit 1
+    mv "${ramfs}.u-boot" "${ramfs}" || exit 1
+}
+
+__UBUILD_INCLUDE_INITRAMFS=1
+fi

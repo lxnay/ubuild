@@ -1,12 +1,11 @@
 #!/bin/bash
 
 . build.include || exit 1
+. initramfs.include || exit 1
 
 # If all the tarballs are cached, we need to let this have
 # a chance to run.
 root_init || exit 1
-
-# TODO: dev nodes? cannot create them if unprivileged
 
 # setup /etc/inittab
 inittab="${WORK_ROOTFS_DIR}/etc/inittab"
@@ -17,7 +16,8 @@ elif [ ! -f "${inittab}" ]; then
     echo "${inittab} does not exist" >&2
     exit 1
 fi
-echo "${IMAGE_TTY_DEV}::respawn:/sbin/getty -nl /sbin/autologin 115200 ${IMAGE_TTY_DEV}" \
+inittab_tty=$(basename "${IMAGE_TTY_DEV}")
+echo "${inittab_tty}::respawn:/sbin/getty -nl /sbin/autologin 115200 ${inittab_tty}" \
     >> "${inittab}" || exit 1
 
 # setup /etc/securetty
@@ -39,13 +39,9 @@ if [ -z "${WORKDIR}" ]; then
     exit 1
 fi
 
-# Generate the cpio archive.
+# Generate the initramfs
 temp_initramfs="${WORKDIR}/${INITRAMFS_NAME}"
-make_cpio "${WORK_ROOTFS_DIR}" "${temp_initramfs}" || exit 1
-gzip -c "${temp_initramfs}" > "${COMPRESSED_INITRAMFS}" || exit 1
+initramfs_generate "${WORK_ROOTFS_DIR}" "${temp_initramfs}" || exit 1
+initramfs_gzip "${temp_initramfs}" "${COMPRESSED_INITRAMFS}" || exit 1
 rm "${temp_initramfs}" || exit 1
-
-mkimage -A arm -O linux -T ramdisk -C none -a "${UBOOT_RAMDISK_ADDRESS}" \
-    -e "${UBOOT_RAMDISK_ENTRYPOINT}" -d "${COMPRESSED_INITRAMFS}" \
-    "${COMPRESSED_INITRAMFS}.u-boot" || exit 1
-mv "${COMPRESSED_INITRAMFS}.u-boot" "${COMPRESSED_INITRAMFS}" || exit 1
+initramfs_u-bootize "${COMPRESSED_INITRAMFS}" || exit 1

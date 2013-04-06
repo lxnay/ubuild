@@ -1,5 +1,7 @@
 #!/bin/bash
 
+_SPEC_DIR=$(dirname "${UBUILD_SPEC_PATH}")
+
 # These are needed by GCC
 ARCH="arm" # armv7a ?
 ABI="gnueabi"
@@ -13,16 +15,20 @@ LDFLAGS="-Wl,-O1 -Wl,--as-needed"
 
 export CFLAGS CXXFLAGS LDFLAGS MAKEOPTS
 
-# Linux kernel configuration, either set KERNEL_DEFCONFIG or KERNEL_CONFIG
-KERNEL_DEFCONFIG=""
-KERNEL_CONFIG="../kernel/armv7_config"
-KERNEL_MD5=$(md5sum "${KERNEL_CONFIG}")
-
-export KERNEL_DEFCONFIG KERNEL_CONFIG KERNEL_MD5
-
 # Busybox configuration, either set BUSYBOX_DEFCONFIG or BUSYBOX_CONFIG
 BUSYBOX_DEFCONFIG=""
-BUSYBOX_CONFIG="../busybox/config"
+BUSYBOX_CONFIG="${_SPEC_DIR}/busybox/config"
 BUSYBOX_MD5=$(md5sum "${BUSYBOX_CONFIG}")
+if [ -z "${BUSYBOX_MD5}" ]; then
+    exit 1
+fi
+
+# This is a subdirectory of UBUILD_BUILD_DIR where busybox is placed
+# after compilation (it's the pkg=busybox target)
+UBUILD_BUSYBOX_TARGET="busybox"
+# This is a subdirectory of UBUILD_BUILD_DIR where busybox is placed
+# after compilation (it's the pkg=kernel target)
+UBUILD_KERNEL_TARGET="kernel"
 
 export BUSYBOX_DEFCONFIG BUSYBOX_CONFIG BUSYBOX_MD5
+export UBUILD_BUSYBOX_TARGET UBUILD_KERNEL_TARGET

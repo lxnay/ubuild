@@ -32,7 +32,7 @@ src_install() {
     mkdir "${TARGET_DIR}" || return 1
     mkdir "${TARGET_DIR}/boot" || return 1
     cp MLO "${TARGET_DIR}/boot/" || return 1
-    cp u-boot.bin "${TARGET_DIR}/boot/" || return 1
+    cp "${UBOOT_IMAGE_NAME}" "${TARGET_DIR}/boot/" || return 1
 }
 
 main

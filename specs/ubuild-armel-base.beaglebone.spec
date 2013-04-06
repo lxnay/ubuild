@@ -78,12 +78,15 @@ url = http://ftp.gnu.org/gnu/gcc/gcc-4.7.2/gcc-4.7.2.tar.bz2
 [pkg=kernel]
 build = scripts/build_pkg_kernel.sh
 cache_vars = KERNEL_DEFCONFIG KERNEL_CONFIG KERNEL_MD5
-sources = linux-3.7.10
-url = http://www.kernel.org/pub/linux/kernel/v3.x/linux-3.7.10.tar.xz
+cache_vars = UBOOT_KERNEL_ADDRESS UBOOT_KERNEL_ENTRYPOINT
+sources = linux-3.8.6+beaglebone
+url = http://distfiles.sabayon.org/sys-kernel/linux-3.8.6+beaglebone.tar.xz
 
 [pkg=u-boot]
 build = scripts/build_pkg_u-boot.sh
-cache_vars = UBOOT_DEFCONFIG UBOOT_UENV
+cache_vars = UBOOT_DEFCONFIG UBOOT_UENV UBOOT_IMAGE_NAME
+patch = patches/u-boot/0001-enable-bootz-and-generic-load-features.patch
+patch = patches/u-boot/0002-bone-use-dtb_file-variable-for-device-tree-file.patch
 post = scripts/post_build_uEnv.sh
 sources = u-boot-2013.01.01
 url = git://git.denx.de/u-boot.git@v2013.01.01 u-boot-2013.01.01.tar.gz
@@ -96,4 +99,3 @@ patch = patches/busybox/busybox-1.7.4-signal-hack.patch
 post = scripts/post_build_initramfs.sh
 sources = busybox-1.20.2
 url = http://www.busybox.net/downloads/busybox-1.20.2.tar.bz2
-

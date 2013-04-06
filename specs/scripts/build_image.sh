@@ -156,7 +156,9 @@ sync
 
 echo "Setting up the boot directory content, mounting on ${boot_tmp_dir}"
 ${PRIV_AGENT} mount "${boot_part}" "${boot_tmp_dir}"
-rsync -r -l -p -v -x "${BOOT_DIR}"/ "${boot_tmp_dir}"/ || exit 1
+for item in "MLO" "uEnv.txt" "${UBOOT_IMAGE_NAME}"; do
+    cp "${BOOT_DIR}/${item}" "${boot_tmp_dir}"/ || exit 1
+done
 
 echo "Setting up the root partition directory content, mounting on ${tmp_dir}"
 ${PRIV_AGENT} mount "${root_part}" "${tmp_dir}"

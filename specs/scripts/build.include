@@ -2,6 +2,8 @@
 
 . base.include
 
+if [ -z "${__UBUILD_INCLUDE_BUILD}" ]; then
+
 # @DESCRIPTION: original directory path from where this script was called
 UBUILD_PWD="${PWD}"
 
@@ -255,23 +257,6 @@ bmake() {
     make ${MAKEOPTS} "${@}"
 }
 
-# @DESCRIPTION: generate a cpio archive in the given path, using the
-# given directory as root directory. Always run in append mode.
-# @USAGE: make_cpio <rootfs dir> <uncompressed cpio archive destination>
-make_cpio() {
-    local rootfs="${1}"
-    local dest="${2}"
-    (
-        cd "${WORK_ROOTFS_DIR}" || exit 1
-        if [ ! -e "${dest}" ]; then
-            echo "Creating empty cpio at: ${dest}"
-            echo | cpio --quiet -o -H newc -F "${dest}" || exit 1
-        fi
-        find . -print | cpio --quiet -o -H newc --append -F \
-            "${dest}" || exit 1
-    ) || return 1
-}
-
 # @DESCRIPTION: main function, to be called by build scripts sourcing this
 # file. It will call all the following build phases in order:
 # - src_fetch: download the sources
@@ -346,3 +331,6 @@ main() {
         return ${exit_st}
     fi
 }
+
+__UBUILD_INCLUDE_BUILD=1
+fi
