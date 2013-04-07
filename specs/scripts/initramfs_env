@@ -3,8 +3,11 @@
 # This is a subdirectory of UBUILD_BUILD_DIR where busybox is placed
 # after compilation (it's the pkg=busybox target)
 UBUILD_BUSYBOX_TARGET="busybox"
-# This is a subdirectory of UBUILD_BUILD_DIR where busybox is placed
+# This is a subdirectory of UBUILD_BUILD_DIR where the kernel is placed
 # after compilation (it's the pkg=kernel target)
 UBUILD_KERNEL_TARGET="kernel"
+# This is a subdirectory of UBUILD_BUILD_DIR where the system libc is placed
+# after compilation (it's the pkg=system-libc target)
+UBUILD_LIBC_TARGET="system-libc"
 
-export UBUILD_BUSYBOX_TARGET UBUILD_KERNEL_TARGET
+export UBUILD_BUSYBOX_TARGET UBUILD_KERNEL_TARGET UBUILD_LIBC_TARGET

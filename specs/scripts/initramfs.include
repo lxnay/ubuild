@@ -39,6 +39,13 @@ initramfs_generate() {
     rsync -avx -H -A -X "${WORK_INITRAMFS_ROOTFS_DIR}"/ \
         "${tmp_initramfs}"/ || return 1
 
+    # copy the libc into the initramfs
+    local libc_dir="${UBUILD_BUILD_DIR}/${UBUILD_LIBC_TARGET}"
+    rsync -avx -H -A -X "${libc_dir}"/ "${tmp_initramfs}"/ \
+        --exclude "usr/share/info" --exclude "usr/share/locale" \
+        --exclude "usr/share/i18n" --exclude "usr/lib/*.a" \
+        --exclude "usr/include" || return 1
+
     # copy busybox
     local busybox_dir="${UBUILD_BUILD_DIR}/${UBUILD_BUSYBOX_TARGET}"
     find "${busybox_dir}" -name ".ubuild*" -delete || return 1

@@ -244,6 +244,21 @@ root_init() {
     done
 }
 
+# @DESCRIPTION: configure the build time and runtime environment
+# of the cross compiler compiling sources for the target root filesystem.
+# @USAGE: work_rootfs_setup_environment
+work_rootfs_setup_environment() {
+    if [ -z "${_WORK_ROOTFS_SETUP_ENVIRONMENT}" ]; then
+        local libpath="${WORK_ROOTFS_DIR}/usr/lib"
+        export LD_LIBRARY_PATH="${libpath}:${LD_LIBRARY_PATH}"
+
+        local path="${WORK_ROOTFS_DIR}/usr/bin"
+        export PATH="${path}:${PATH}"
+
+        _WORK_ROOTFS_SETUP_ENVIRONMENT=1
+    fi
+}
+
 
 # Export all the public functions without the build_* prefix.
 for _func in $(compgen -A function); do

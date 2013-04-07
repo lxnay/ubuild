@@ -14,6 +14,7 @@ xbbmake() {
 src_prepare() {
     build_src_prepare || return 1
     cross_setup_environment || return 1
+    work_rootfs_setup_environment || return 1
 }
 
 src_configure() {
