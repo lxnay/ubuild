@@ -28,6 +28,14 @@ src_configure() {
 
 src_install() {
     bmake install_root="${TARGET_DIR}" install || return 1
+
+    # add ld-linux.so.3 if it doesn't exist. This is a workaround
+    # for broken/old binaries.
+    local armhf_ld="${TARGET_DIR}/lib/ld-linux-armhf.so.3"
+    local sys_ld="${TARGET_DIR}/lib/ld-linux.so.3"
+    if [ -e "${armhf_ld}" ] && [ ! -e "${sys_ld}" ]; then
+        ln -s $(basename "${armhf_ld}") "${sys_ld}" || return 1
+    fi
 }
 
 main
