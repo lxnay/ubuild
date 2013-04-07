@@ -250,7 +250,11 @@ root_init() {
 work_rootfs_setup_environment() {
     if [ -z "${_WORK_ROOTFS_SETUP_ENVIRONMENT}" ]; then
         local libpath="${WORK_ROOTFS_DIR}/usr/lib"
-        export LD_LIBRARY_PATH="${libpath}:${LD_LIBRARY_PATH}"
+        if [ -n "${LD_LIBRARY_PATH}" ]; then
+            export LD_LIBRARY_PATH="${libpath}:${LD_LIBRARY_PATH}"
+        else
+            export LD_LIBRARY_PATH="${libpath}"
+        fi
 
         local path="${WORK_ROOTFS_DIR}/usr/bin"
         export PATH="${path}:${PATH}"
