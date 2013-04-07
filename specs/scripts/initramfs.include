@@ -27,7 +27,8 @@ make_cpio() {
 initramfs_generate() {
     local rootfs="${1}"
     local initramfs_file="${2}"
-    local tmp_initramfs="$(mktemp -d --suffix=tmp.initramfs)"
+    local tmp_initramfs=$(TMPDIR="${UBUILD_BUILD_DIR}" mktemp \
+        -d --suffix=tmp.initramfs)
 
     if [ -z "${tmp_initramfs}" ]; then
         echo "Cannot create temporary directory" >&2
