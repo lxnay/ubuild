@@ -3,7 +3,7 @@
 _SPEC_DIR=$(dirname "${UBUILD_SPEC_PATH}")
 
 # These are needed by GCC
-ARCH="arm" # armv7a ?
+ARCH="arm"
 ABI="gnueabi"
 CTARGET="${ARCH}-unknown-linux-${ABI}"
 export ARCH ABI CTARGET
