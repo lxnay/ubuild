@@ -1,5 +1,7 @@
 #!/bin/bash
 
+_SPEC_DIR=$(dirname "${UBUILD_SPEC_PATH}")
+
 # Busybox configuration, either set BUSYBOX_DEFCONFIG or BUSYBOX_CONFIG
 BUSYBOX_DEFCONFIG=""
 BUSYBOX_CONFIG="${_SPEC_DIR}/busybox/config"
