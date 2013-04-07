@@ -29,6 +29,15 @@ initramfs_generate() {
     local initramfs_file="${2}"
     local tmp_initramfs="$(mktemp -d --suffix=tmp.initramfs)"
 
+    if [ -z "${tmp_initramfs}" ]; then
+        echo "Cannot create temporary directory" >&2
+        return 1
+    fi
+
+    # copy base initramfs directory tree
+    rsync -avx -H -A -X "${WORK_INITRAMFS_ROOTFS_DIR}"/ \
+        "${tmp_initramfs}"/ || return 1
+
     # copy busybox
     local busybox_dir="${UBUILD_BUILD_DIR}/${UBUILD_BUSYBOX_TARGET}"
     find "${busybox_dir}" -name ".ubuild*" -delete || return 1
@@ -137,8 +146,11 @@ initramfs_generate() {
         ${PRIV_AGENT} mknod -m 600 ttyS0 c 4 64 || exit 1
     ) || return 1
 
+    ln -s "sbin/init" "${tmp_initramfs}"/init || return 1
+
     # eventually make the cpio archive
     make_cpio "${tmp_initramfs}" "${initramfs_file}" || return 1
+    rm -rf "${tmp_initramfs}"
 }
 
 # @DESCRIPTION: compress an initramfs using gzip
