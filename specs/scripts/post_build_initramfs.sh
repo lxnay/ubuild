@@ -7,26 +7,40 @@
 # a chance to run.
 root_init || exit 1
 
+
+_setup_inittab() {
+    local inittab="${1}"
+
+    if [ -z "${IMAGE_TTY_DEV}" ]; then
+        echo "IMAGE_TTY_DEV unset, cannot setup /etc/inittab" >&2
+        return 1
+    elif [ ! -f "${inittab}" ]; then
+        echo "${inittab} does not exist" >&2
+        return 1
+    fi
+    inittab_tty=$(basename "${IMAGE_TTY_DEV}")
+    echo "${inittab_tty}::respawn:/sbin/getty -nl /sbin/autologin 115200 ${inittab_tty}" \
+        >> "${inittab}" || return 1
+}
+
+_setup_securetty() {
+    local securetty="${1}"
+
+    if [ ! -f "${securetty}" ]; then
+        echo "${securetty} does not exist" >&2
+        return 1
+    fi
+    echo "${IMAGE_TTY_DEV}" >> "${securetty}" || return 1
+}
+
+
 # setup /etc/inittab
-inittab="${WORK_ROOTFS_DIR}/etc/inittab"
-if [ -z "${IMAGE_TTY_DEV}" ]; then
-    echo "IMAGE_TTY_DEV unset, cannot setup /etc/inittab" >&2
-    exit 1
-elif [ ! -f "${inittab}" ]; then
-    echo "${inittab} does not exist" >&2
-    exit 1
-fi
-inittab_tty=$(basename "${IMAGE_TTY_DEV}")
-echo "${inittab_tty}::respawn:/sbin/getty -nl /sbin/autologin 115200 ${inittab_tty}" \
-    >> "${inittab}" || exit 1
+_setup_inittab "${WORK_ROOTFS_DIR}/etc/inittab" || exit 1
+_setup_inittab "${WORK_INITRAMFS_ROOTFS_DIR}/etc/inittab" || exit 1
 
 # setup /etc/securetty
-securetty="${WORK_ROOTFS_DIR}/etc/securetty"
-if [ ! -f "${securetty}" ]; then
-    echo "${securetty} does not exist" >&2
-    exit 1
-fi
-echo "${IMAGE_TTY_DEV}" >> "${securetty}" || exit 1
+_setup_securetty "${WORK_ROOTFS_DIR}/etc/securetty" || exit 1
+_setup_securetty "${WORK_INITRAMFS_ROOTFS_DIR}/etc/securetty" || exit 1
 
 # As per u-boot hardcoded variables
 INITRAMFS_NAME="initramfs"
