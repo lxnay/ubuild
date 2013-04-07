@@ -14,6 +14,7 @@ env = scripts/privileged_access_env
 pre = scripts/pre_build.sh
 post = scripts/post_build.sh
 rootfs_dir = rootfs/
+initramfs_rootfs_dir = rootfs/
 sources_dir = sources/
 
 [cross=gmp]
