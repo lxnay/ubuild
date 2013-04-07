@@ -55,7 +55,9 @@ initramfs_generate() {
 
     # copy kernel modules
     local kernel_mod_dir="${kernel_lib_dir}/modules"
-    local kernel_mod_dir_name=$(ls -1 "${kernel_mod_dir}/" | sort | head -n 1)
+    local kernel_mod_dep_f=$(find "${kernel_mod_dir}" \
+        -name "modules.dep" -print -quit)
+    local kernel_mod_dir_name=$(basename "$(dirname "${kernel_mod_dep_f}")")
 
     kernel_mod_dir="${kernel_mod_dir}/${kernel_mod_dir_name}"
     if [ ! -d "${kernel_mod_dir}" ] || [ -z "${kernel_mod_dir_name}" ]; then
