@@ -138,11 +138,6 @@ initramfs_generate() {
         mkdir -p "${tmp_initramfs}/${d}" || return 1
     done
 
-    echo "/dev/ram0 / ext2 defaults 0 0" > "${tmp_initramfs}"/etc/fstab \
-        || return 1
-    echo "proc /proc proc defaults 0 0" >> "${tmp_initramfs}"/etc/fstab \
-        || return 1
-
     (
         cd "${tmp_initramfs}/dev" || exit 1
         ${PRIV_AGENT} mknod -m 660 console c 5 1 || exit 1
