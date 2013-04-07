@@ -18,7 +18,8 @@ src_configure() {
         --disable-libmudflap --enable-languages=c \
         --with-mpfr="${UBUILD_BUILD_DIR}/mpfr/usr" \
         --with-gmp="${UBUILD_BUILD_DIR}/gmp/usr" \
-        --with-mpc="${UBUILD_BUILD_DIR}/mpc/usr"
+        --with-mpc="${UBUILD_BUILD_DIR}/mpc/usr" \
+        ${GCC_CONFIGURE_ARGS}
 }
 
 src_compile() {
