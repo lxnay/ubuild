@@ -15,9 +15,9 @@ NORMAL="$(echo -e '\033[0;39m')"
 
 
 VERSION=0.1
-HOSTNAME=sfingi_vr
-USER="myself"
-PASSWD="sfingi"
+HOSTNAME=ubuild
+USER="user"
+PASSWD="user"
 
 setup_home(){
   yes n | cp -ai /etc/skel/. /home/"$USER"/ 2>/dev/null
@@ -71,9 +71,6 @@ setup_base_fs() {
   # Then, remount the rootfs read-write
   /bin/mount -o remount,rw /
 
-  mkdir /sys
-  mkdir /tmp
-  mkdir /home
   mkdir /opt
   mkdir -p /dev/pts
   mkdir -p /dev/shm
@@ -81,7 +78,7 @@ setup_base_fs() {
   mkdir -p /var/log
   mkdir -p /var/tmp
   chmod a+rw /tmp
-  echo "Sfingi VR" > /etc/issue
+  echo "Ubuild Image" > /etc/issue
 
   ln -s         /proc/mounts /etc/mtab
   /bin/mount -a
@@ -93,7 +90,7 @@ find_mountpoint() {
  D2="$1"
  if [ "${D2:0:6}" == "LABEL=" ]; then
    LABEL=$(echo $D2 | cut -d '=' -f 2)
-   D2=$(/sbin/blkid | grep LABEL= | grep $LABEL | cut -d ':' -f 1) 
+   D2=$(/sbin/blkid | grep LABEL= | grep $LABEL | cut -d ':' -f 1)
    if [ "$?" != 0 ]; then
      MOUNTPOINT=""
      return
