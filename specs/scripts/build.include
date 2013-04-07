@@ -14,6 +14,10 @@ UBUILD_PWD="${PWD}"
 # @DESCRIPTION: directory used as the in the works root filesystem directory
 WORK_ROOTFS_DIR="${UBUILD_BUILD_DIR}/rootfs"
 
+# @DESCRIPTION: directory used as the in the works root filesystem directory
+# for the initramfs.
+WORK_INITRAMFS_ROOTFS_DIR="${UBUILD_BUILD_DIR}/initramfs.rootfs"
+
 # @DESCRIPTION: handy variable that contains the ${UBUILD_TARGET_NAME} variable
 PN="${UBUILD_TARGET_NAME/*=}" # drop cross= or pkg=
 
