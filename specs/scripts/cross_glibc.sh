@@ -4,8 +4,8 @@
 . toolchain.include
 
 src_prepare() {
+    build_src_prepare || return 1
     cross_setup_environment || return 1
-    build_src_prepare
 }
 
 src_configure() {
