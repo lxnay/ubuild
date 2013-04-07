@@ -139,6 +139,7 @@ env = %(env)s
 image_name = ubuild_armel.test.img
 pre = %(script)s pre1 pre2
 rootfs_dir = %(dir)s
+initramfs_rootfs_dir = %(dir)s
 sources_dir = %(dir)s
 
 [cross=gmp]
@@ -233,6 +234,7 @@ url = http://www.kernel.org/pub/linux/kernel/v3.x/linux-3.7.10.tar.xz
                 ],
                 "image_name": ["ubuild_armel.test.img"],
                 "rootfs_dir": ["%(dir)s"],
+                "initramfs_rootfs_dir": ["%(dir)s"],
                 "cross_env": ["%(env)s"],
                 "cross_post": [
                     ["%(script)s", "arg1", "arg2"]
