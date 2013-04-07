@@ -1,5 +1,5 @@
 # ubuild .spec file that creates an armel (armv7,
-# softfp) image for the BeagleBone.
+# hardfp) image for the BeagleBone.
 
 #include base.beaglebone.header
 
