@@ -11,7 +11,7 @@
 cross_setup_environment() {
     if [ -z "${_CROSS_SETUP_ENVIRONMENT}" ]; then
         local libpath="${CROSS_SYSROOT}/usr/lib"
-        export LD_LIBRARY_PATH="${libpath}"
+        export LD_LIBRARY_PATH="${libpath}:${LD_LIBRARY_PATH}"
 
         local path="${CROSS_SYSROOT}/usr/bin"
         export PATH="${path}:${PATH}"
