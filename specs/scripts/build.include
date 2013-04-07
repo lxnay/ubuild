@@ -4,6 +4,10 @@
 
 if [ -z "${__UBUILD_INCLUDE_BUILD}" ]; then
 
+# Export an initial TMPDIR. This makes sure anything will be placed into
+# /tmp, which might be on tmpfs.
+export TMPDIR="${UBUILB_BUILD_DIR}"
+
 # @DESCRIPTION: original directory path from where this script was called
 UBUILD_PWD="${PWD}"
 
