@@ -3,9 +3,9 @@
 _SPEC_DIR=$(dirname "${UBUILD_SPEC_PATH}")
 
 # These are needed by GCC
-ARCH="armv7a"
+ARCH="arm"
 ABI="gnueabi"
-CTARGET="${ARCH}-hardfloat-linux-${ABI}"
+CTARGET="armv7a-hardfloat-linux-${ABI}"
 export ARCH ABI CTARGET
 
 MAKEOPTS="-j 5"
