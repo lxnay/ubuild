@@ -321,7 +321,6 @@ main() {
     echo "UBUILD_PATCHES: ${UBUILD_PATCHES}"
     echo
     echo "Local variables:"
-    echo "ARCHIVE: ${ARCHIVE}"
     echo "BUILD_DIR: ${BUILD_DIR}"
     echo "IMAGE_TARGET_DIR: ${IMAGE_TARGET_DIR}"
     echo "PATCH_LOG: ${PATCH_LOG}"
