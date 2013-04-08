@@ -1,0 +1,16 @@
+# Header file used to build userspace application for ARM images
+
+[pkg=system-libc]
+build = scripts/build_pkg_libc.sh
+patch = patches/glibc-2.16-no-libgcc_s.patch
+sources = glibc-2.16.0
+url = http://ftp.gnu.org/gnu/glibc/glibc-2.16.0.tar.xz
+
+[pkg=busybox]
+build = scripts/build_pkg_busybox.sh
+cache_vars = BUSYBOX_DEFCONFIG BUSYBOX_CONFIG BUSYBOX_MD5
+patch = patches/busybox/busybox-1.20.2-glibc-sys-resource.patch
+patch = patches/busybox/busybox-1.7.4-signal-hack.patch
+post = scripts/post_build_initramfs.sh
+sources = busybox-1.20.2
+url = http://www.busybox.net/downloads/busybox-1.20.2.tar.bz2

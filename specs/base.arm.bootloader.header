@@ -1,0 +1,8 @@
+# Header file used to build the bootloader used by ARM images
+
+[pkg=u-boot]
+build = scripts/build_pkg_u-boot.sh
+cache_vars = UBOOT_DEFCONFIG UBOOT_UENV UBOOT_IMAGE_NAME
+post = scripts/post_build_uEnv.sh
+sources = u-boot-2013.01.01
+url = git://git.denx.de/u-boot.git@v2013.01.01 u-boot-2013.01.01.tar.gz
