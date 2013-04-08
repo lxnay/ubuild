@@ -103,7 +103,7 @@ class SpecPreprocessor(object):
                 else:
                     lines += line
 
-        return lines
+        return lines + "\n"
 
     def parse(self):
         """
