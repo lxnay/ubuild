@@ -31,6 +31,9 @@ src_install() {
 
     # add ld-linux.so.3 if it doesn't exist. This is a workaround
     # for broken/old binaries.
+    # NOTE: this seems to be a problem with <glibc-2.17 and
+    # newer GCCs (>=4.7). Looking at the glibc-2.17 changelog,
+    # this seems to be addressed there (in a non-trivial way).
     local armhf_ld="${TARGET_DIR}/lib/ld-linux-armhf.so.3"
     local sys_ld="${TARGET_DIR}/lib/ld-linux.so.3"
     if [ -e "${armhf_ld}" ] && [ ! -e "${sys_ld}" ]; then
