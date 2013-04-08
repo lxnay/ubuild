@@ -53,10 +53,11 @@ initramfs_generate() {
 
     # copy kernel firmwares
     local kernel_lib_dir="${UBUILD_BUILD_DIR}/${UBUILD_KERNEL_TARGET}/lib"
+    local kernel_lib_fw_dir="${kernel_lib_dir}/firmware"
     local tmp_fw_dir="${tmp_initramfs}/lib/firmware"
-    if [ "${kernel_lib_dir}" ]; then
+    if [ -d "${kernel_lib_fw_dir}" ]; then
         mkdir -p "${tmp_fw_dir}" || return 1
-        rsync -avx -H -A -X "${kernel_lib_dir}/firmware"/ \
+        rsync -avx -H -A -X "${kernel_lib_fw_dir}"/ \
             "${tmp_fw_dir}"/ || return 1
     fi
 
