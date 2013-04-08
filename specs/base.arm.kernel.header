@@ -1,0 +1,6 @@
+# Header file used to build the Linux kernel for ARM images
+
+[pkg=kernel]
+build = scripts/build_pkg_kernel.sh
+cache_vars = KERNEL_DEFCONFIG KERNEL_CONFIG KERNEL_MD5
+cache_vars = UBOOT_KERNEL_ADDRESS UBOOT_KERNEL_ENTRYPOINT

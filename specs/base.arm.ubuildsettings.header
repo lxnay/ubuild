@@ -7,7 +7,6 @@ cache_vars = CFLAGS CPPFLAGS CXXFLAGS LDFLAGS
 cache_vars = WORK_ROOTFS_DIR GCC_CONFIGURE_ARGS
 cross_post = scripts/cross_post_build.sh
 destination_dir = /var/tmp/ubuild_images
-env = board_env/beaglebone_env
 env = scripts/busybox_env
 env = scripts/initramfs_env
 env = scripts/privileged_access_env

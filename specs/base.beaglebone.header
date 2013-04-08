@@ -1,12 +1,13 @@
 # Header file used for building base BeagleBone images
 
 #include base.arm.ubuildsettings.header
+[ubuild]
+env = board_env/beaglebone_env
+
 #include base.arm.crosscompiler.header
 
+#include base.arm.kernel.header
 [pkg=kernel]
-build = scripts/build_pkg_kernel.sh
-cache_vars = KERNEL_DEFCONFIG KERNEL_CONFIG KERNEL_MD5
-cache_vars = UBOOT_KERNEL_ADDRESS UBOOT_KERNEL_ENTRYPOINT
 sources = linux-3.8.6+beaglebone
 url = http://distfiles.sabayon.org/sys-kernel/linux-3.8.6+beaglebone.tar.xz
 
