@@ -1,0 +1,15 @@
+# Header file used for building base BeagleBoard images
+
+#include base.arm.ubuildsettings.header
+[ubuild]
+env = board_env/beagleboard_env
+
+#include base.arm.crosscompiler.header
+
+#include base.arm.kernel.header
+[pkg=kernel]
+sources = linux-3.8.6
+url = https://www.kernel.org/pub/linux/kernel/v3.x/linux-3.8.6.tar.xz
+
+#include base.arm.bootloader.header
+#include base.arm.userspace.header

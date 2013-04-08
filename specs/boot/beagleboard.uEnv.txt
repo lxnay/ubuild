@@ -1,0 +1,5 @@
+ramdiskfile=/boot/initramfs.gz
+bootfile=/boot/uImage
+optargs=consoleblank=0 earlyprintk=serial fixrtc nocompcache noswap
+uenvcmd=run mmcargs; ext2load mmc ${mmcdev}:2 ${loadaddr} ${bootfile}; ext2load mmc ${mmcdev}:2 ${rdaddr} ${ramdiskfile}; bootm ${loadaddr} ${rdaddr}
+
