@@ -916,7 +916,9 @@ class Ubuild(object):
 
     cfg_file = os.getenv(
         "UBUILD_LOGGING_CFGFILE",
-        "conf/ubuild.logging.conf")
+        os.path.join(
+            os.path.abspath(os.path.dirname(__file__)),
+            "conf/ubuild.logging.conf"))
     if os.path.isfile(cfg_file):
         logging.config.fileConfig(cfg_file, disable_existing_loggers=False)
     else:
