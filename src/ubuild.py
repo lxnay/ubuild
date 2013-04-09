@@ -917,7 +917,7 @@ class Ubuild(object):
     cfg_file = os.getenv(
         "UBUILD_LOGGING_CFGFILE",
         os.path.join(
-            os.path.abspath(os.path.dirname(__file__)),
+            os.path.abspath(os.path.dirname(os.path.realpath(__file__))),
             "conf/ubuild.logging.conf"))
     if os.path.isfile(cfg_file):
         logging.config.fileConfig(cfg_file, disable_existing_loggers=False)
@@ -1003,9 +1003,9 @@ class Ubuild(object):
           an environment dict.
         """
         env_sourcer = os.path.abspath(os.path.join(
-            os.path.dirname(__file__),
+            os.path.dirname(os.path.realpath(__file__)),
             "core", "env_sourcer.sh"))
-        assert os.path.isfile(env_sourcer)
+        assert os.path.isfile(env_sourcer), "%s not found" % (env_sourcer,)
 
         self._logger.info(
             "[%s] sourcing: %s", self._spec_name, env_file)
