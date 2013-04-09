@@ -6,7 +6,6 @@ ABI="gnueabi"
 CTARGET="armv7a-hardfloat-linux-${ABI}"
 export ARCH ABI CTARGET
 
-MAKEOPTS="-j 5"
 CFLAGS="-O2 -pipe"
 CXXFLAGS="${CXXFLAGS}"
 LDFLAGS="-Wl,-O1 -Wl,--as-needed"
@@ -14,4 +13,4 @@ LDFLAGS="-Wl,-O1 -Wl,--as-needed"
 # ARM specific flags
 GCC_CONFIGURE_ARGS="--with-arch=armv7-a --with-fpu=vfpv3-d16 --with-float=hard"
 
-export CFLAGS CXXFLAGS LDFLAGS MAKEOPTS GCC_CONFIGURE_ARGS
+export CFLAGS CXXFLAGS LDFLAGS GCC_CONFIGURE_ARGS

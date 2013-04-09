@@ -8,9 +8,8 @@ ABI="gnueabi"
 CTARGET="armv7a-hardfloat-linux-${ABI}"
 export ARCH ABI CTARGET
 
-MAKEOPTS="-j 5"
 CFLAGS="-O2 -pipe -march=armv7-a -mfpu=vfpv3-d16 -mfloat-abi=hard"
 CXXFLAGS="${CXXFLAGS}"
 LDFLAGS="-Wl,-O1 -Wl,--as-needed"
 
-export CFLAGS CXXFLAGS LDFLAGS MAKEOPTS
+export CFLAGS CXXFLAGS LDFLAGS

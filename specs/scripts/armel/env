@@ -8,7 +8,6 @@ ABI="gnueabi"
 CTARGET="${ARCH}-unknown-linux-${ABI}"
 export ARCH ABI CTARGET
 
-MAKEOPTS="-j 5"
 CFLAGS="-O2 -pipe -march=armv7-a -mfpu=vfpv3-d16 -mfloat-abi=softfp"
 CXXFLAGS="${CXXFLAGS}"
 LDFLAGS="-Wl,-O1 -Wl,--as-needed"

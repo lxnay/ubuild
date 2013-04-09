@@ -10,6 +10,7 @@ destination_dir = /var/tmp/ubuild_images
 env = scripts/busybox_env
 env = scripts/initramfs_env
 env = scripts/privileged_access_env
+env = scripts/makeopts_env
 pre = scripts/pre_build.sh
 post = scripts/post_build.sh
 rootfs_dir = rootfs/
