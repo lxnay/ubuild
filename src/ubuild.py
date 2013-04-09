@@ -568,10 +568,7 @@ class SpecParser(_SpecParser):
         Returns:
           the mangled (and created if not found) directory.
         """
-        new_value = self._mangle_directory(
-            spec_path, section_name, param, value)
-        if new_value is None:
-            return None
+        new_value = self._path_normalize(spec_path, value)
 
         try:
             os.makedirs(new_value, 0o755)
