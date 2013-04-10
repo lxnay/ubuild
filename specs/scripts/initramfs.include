@@ -3,6 +3,8 @@
 
 if [ -z "${__UBUILD_INCLUDE_INITRAMFS}" ]; then
 
+. toolchain.include
+
 # @DESCRIPTION: generate a cpio archive in the given path, using the
 # given directory as root directory. Always run in append mode.
 # @USAGE: make_cpio <rootfs dir> <uncompressed cpio archive destination>
@@ -170,6 +172,8 @@ initramfs_gzip() {
 # @DESCRIPTION: prepend the u-boot header to an initramfs file.
 # @USAGE: initramfs_u-bootize <initramfs path>
 initramfs_u-bootize() {
+    # ensure that a potentially built mkimage is in $PATH
+    cross_setup_environment || return 1
     local ramfs="${1}"
 
     mkimage -A arm -O linux -T ramdisk -C none -a "${UBOOT_RAMDISK_ADDRESS}" \
