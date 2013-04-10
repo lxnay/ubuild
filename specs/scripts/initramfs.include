@@ -178,8 +178,8 @@ initramfs_u-bootize() {
 
     mkimage -A arm -O linux -T ramdisk -C none -a "${UBOOT_RAMDISK_ADDRESS}" \
         -e "${UBOOT_RAMDISK_ENTRYPOINT}" -d "${ramfs}" \
-        "${ramfs}.u-boot" || exit 1
-    mv "${ramfs}.u-boot" "${ramfs}" || exit 1
+        "${ramfs}.u-boot" || return 1
+    mv "${ramfs}.u-boot" "${ramfs}" || return 1
 }
 
 __UBUILD_INCLUDE_INITRAMFS=1
