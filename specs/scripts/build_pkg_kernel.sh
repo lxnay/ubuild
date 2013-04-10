@@ -13,18 +13,15 @@ xkmake() {
 }
 
 src_prepare() {
+    build_src_prepare || return 1
+    cross_setup_environment || return 1
+
     # check if lzop and mkimage are found.
     which lzop 2>&1 > /dev/null
     if [ "${?}" != "0" ]; then
         echo "lzop not found, please install it" >&2
+        return 1
     fi
-    which mkimage 2>&1 > /dev/null
-    if [ "${?}" != "0" ]; then
-        echo "mkimage not found, please install it" >&2
-    fi
-
-    build_src_prepare || return 1
-    cross_setup_environment || return 1
 }
 
 src_configure() {

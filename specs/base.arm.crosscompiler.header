@@ -54,3 +54,8 @@ url = http://ftp.gnu.org/gnu/glibc/glibc-2.16.0.tar.xz
 build = scripts/cross_gcc-stage2.sh
 sources = gcc-4.7.2
 url = http://ftp.gnu.org/gnu/gcc/gcc-4.7.2/gcc-4.7.2.tar.bz2
+
+[cross=u-boot-tools]
+build = scripts/cross_u-boot-tools.sh
+sources = u-boot-2012.10
+url = ftp://ftp.denx.de/pub/u-boot/u-boot-2012.10.tar.bz2
