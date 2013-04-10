@@ -1,6 +1,6 @@
 #!/bin/bash
 
-_NUM_CPUS="$(($(cat /proc/cpuinfo 2>/dev/null | grep ^processor | wc -l) - 1))"
+_NUM_CPUS="$(($(grep ^processor /proc/cpuinfo 2> /Dev/null | wc -l) - 1))"
 if [ "${_NUM_CPUS}" = "" ] || [ "${_NUM_CPUS}" = "0" ]; then
     _NUM_CPUS="1"
 fi
