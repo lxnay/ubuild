@@ -12,7 +12,7 @@ src_configure() {
     build_src_configure \
         --target="${CTARGET}" \
         --prefix="/usr" \
-        --with-sysroot="${CROSS_SYSROOT}" \
+        --with-sysroot="${CROSS_ROOT_DIR}" \
         --without-headers --with-newlib --disable-shared \
         --disable-threads --disable-libssp --disable-libgomp \
         --disable-libmudflap --enable-languages=c \

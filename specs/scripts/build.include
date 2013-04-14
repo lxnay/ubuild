@@ -183,11 +183,11 @@ build_pkg_cache() {
 
 # @DESCRIPTION: merge the content of ${TARGET_DIR} either into
 # ${WORK_ROOTFS_DIR}/ in case of ${TARGET_TYPE} = "pkg" or into
-# ${CROSS_SYSROOT}/ in case of ${TARGET_TYPE} = "cross".
+# ${CROSS_ROOT_DIR}/ in case of ${TARGET_TYPE} = "cross".
 # @USAGE: build_pkg_merge
 build_pkg_merge() {
     # save target type into ${TARGET_DIR}. This way we can
-    # recreate WORK_ROOTFS_DIR (or CROSS_SYSROOT) even from
+    # recreate WORK_ROOTFS_DIR (or CROSS_ROOT_DIR) even from
     # cached tarballs.
     echo "${TARGET_TYPE}" > "${TARGET_DIR}/${TARGET_TYPE_FILE}" || return 1
 
@@ -195,7 +195,7 @@ build_pkg_merge() {
     if [ "${TARGET_TYPE}" = "pkg" ]; then
         dest="${WORK_ROOTFS_DIR}"
     elif [ "${TARGET_TYPE}" = "cross" ]; then
-        dest="${CROSS_SYSROOT}"
+        dest="${CROSS_ROOT_DIR}"
     else
         echo "Unknown TARGET_TYPE = ${TARGET_TYPE}" >&2
         return 1
@@ -205,7 +205,7 @@ build_pkg_merge() {
     rsync -ax -H -A -X "${TARGET_DIR}"/ "${dest}"/ || return 1
 }
 
-# @DESCRIPTION: initialize ${CROSS_SYSROOT} and ${WORK_ROOTFS_DIR}
+# @DESCRIPTION: initialize ${CROSS_ROOT_DIR} and ${WORK_ROOTFS_DIR}
 # directories individual ${TARGET_DIR}s unpacked by UbuildCache into
 # ${UBUILD_BUILD_DIR}
 # @USAGE: _root_init
@@ -224,8 +224,8 @@ root_init() {
         fi
 
         target_dir=$(dirname "${target_file}")
-        if [ "${target_dir}" = "${CROSS_SYSROOT}" ]; then
-            echo "TARGET_DIR is ${CROSS_SYSROOT}, skipping ..."
+        if [ "${target_dir}" = "${CROSS_ROOT_DIR}" ]; then
+            echo "TARGET_DIR is ${CROSS_ROOT_DIR}, skipping ..."
             continue
         fi
         if [ "${target_dir}" = "${WORK_ROOTFS_DIR}" ]; then

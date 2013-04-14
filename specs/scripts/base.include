@@ -6,7 +6,7 @@
 if [ -z "${__UBUILD_INCLUDE_BASE}" ]; then
 
 # @DESCRIPTION: directory in where the cross compiler toolchain is merged.
-CROSS_SYSROOT="${UBUILD_BUILD_DIR}/${CTARGET}"
+CROSS_ROOT_DIR="${UBUILD_BUILD_DIR}/${CTARGET}"
 
 # @DESCRIPTION: name of the file that is created inside ${TARGET_DIR},
 # containing the value of the ${TARGET_TYPE} variable.

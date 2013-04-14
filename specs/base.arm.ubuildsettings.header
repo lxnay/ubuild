@@ -2,7 +2,7 @@
 
 [ubuild]
 build_image = scripts/build_image.sh .xz
-cache_vars = ARCH ABI GMPABI CROSS_SYSROOT
+cache_vars = ARCH ABI GMPABI CROSS_ROOT_DIR
 cache_vars = CFLAGS CPPFLAGS CXXFLAGS LDFLAGS
 cache_vars = WORK_ROOTFS_DIR GCC_CONFIGURE_ARGS
 cross_post = scripts/cross_post_build.sh
