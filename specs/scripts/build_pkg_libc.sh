@@ -18,7 +18,7 @@ src_configure() {
     # - glibc-ports
     build_src_configure \
         --prefix="/usr" \
-        --with-headers="${UBUILD_BUILD_DIR}/linux-headers/usr/include" \
+        --with-headers="${CROSS_SYSROOT_DIR}/usr/include" \
         --host="${CTARGET}" --enable-bind-now \
         --disable-profile --without-gd \
         --without-cvs --disable-multi-arch \

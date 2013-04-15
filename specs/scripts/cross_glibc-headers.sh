@@ -19,7 +19,7 @@ src_configure() {
         RANLIB="${CTARGET}-ranlib" \
         build_src_configure \
         --prefix="/usr" \
-        --with-headers="${UBUILD_BUILD_DIR}/linux-headers/usr/include" \
+        --with-headers="${CROSS_SYSROOT_DIR}/usr/include" \
         --host="${CTARGET}" \
         --disable-profile \
         --without-gd --without-cvs \
@@ -31,19 +31,26 @@ src_compile() {
 }
 
 src_install() {
-    bmake install_root="${TARGET_DIR}" install-headers || return 1
+    local base_sysroot="$(dirname "${CROSS_SYSROOT_PREFIX_DIR}")"
+
+    mkdir -p "${TARGET_DIR}/${base_sysroot}" || return 1
+    bmake install_root="${TARGET_DIR}/${base_sysroot}" \
+        install-headers || return 1
     if [ -e "${S}"/bits/stdio_lim.h ]; then
         install -m 644 "${S}"/bits/stdio_lim.h \
-            "${TARGET_DIR}"/usr/include/bits/ || return 1
+            "${TARGET_DIR}${CROSS_SYSROOT_PREFIX_DIR}/include/bits/" \
+            || return 1
     fi
     install -m 644 "${S}"/include/gnu/stubs.h \
-        "${TARGET_DIR}"/usr/include/gnu/ || return 1
+        "${TARGET_DIR}${CROSS_SYSROOT_PREFIX_DIR}/include/gnu/" || return 1
 
     # Make sure we install the sys-include symlink so that when
     # we build a 2nd stage cross-compiler, gcc finds the target
     # system headers correctly.  See gcc/doc/gccinstall.info
-    mkdir -p "${TARGET_DIR}"/usr/"${CTARGET}" || return 1
-    ln -snf usr/include "${TARGET_DIR}/usr/${CTARGET}/sys-include" || return 1
+    mkdir -p "${TARGET_DIR}${CROSS_SYSROOT_PREFIX_DIR}/${CTARGET}" || return 1
+    ln -snf usr/include \
+        "${TARGET_DIR}${CROSS_SYSROOT_PREFIX_DIR}/${CTARGET}/sys-include" \
+        || return 1
 }
 
 main

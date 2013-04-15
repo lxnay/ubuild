@@ -5,8 +5,8 @@
 src_configure() {
     build_src_configure \
         --target="${CTARGET}" \
-        --prefix="/usr" \
-        --with-sysroot="${CROSS_ROOT_DIR}"
+        --prefix="${CROSS_PREFIX_DIR}" \
+        --with-sysroot="${CROSS_SYSROOT_DIR}"
 }
 
 main

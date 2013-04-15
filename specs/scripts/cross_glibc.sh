@@ -15,7 +15,7 @@ src_configure() {
 
     build_src_configure \
         --prefix="/usr" \
-        --with-headers="${UBUILD_BUILD_DIR}/linux-headers/usr/include" \
+        --with-headers="${CROSS_SYSROOT_DIR}/usr/include" \
         --host="${CTARGET}" --enable-bind-now \
         --disable-profile --without-gd \
         --without-cvs --disable-multi-arch \
@@ -24,7 +24,10 @@ src_configure() {
 }
 
 src_install() {
-    bmake install_root="${TARGET_DIR}" install || return 1
+    local base_sysroot="$(dirname "${CROSS_SYSROOT_PREFIX_DIR}")"
+
+    mkdir -p "${TARGET_DIR}/${base_sysroot}" || return 1
+    bmake install_root="${TARGET_DIR}/${base_sysroot}" install || return 1
 }
 
 main

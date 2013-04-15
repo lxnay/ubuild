@@ -3,7 +3,7 @@
 . build.include
 
 src_configure() {
-    build_src_configure --prefix="/usr" --enable-cxx
+    build_src_configure --prefix="${CROSS_PREFIX_DIR}" --enable-cxx
 }
 
 src_install() {

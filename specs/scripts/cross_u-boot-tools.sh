@@ -26,8 +26,8 @@ src_compile() {
 
 src_install() {
     cd "${BUILD_DIR}" || return 1
-    mkdir -p "${TARGET_DIR}/usr/bin" || return 1
-    cp tools/mkimage "${TARGET_DIR}/usr/bin/mkimage" || return 1
+    mkdir -p "${TARGET_DIR}/${CROSS_PREFIX_DIR}/bin" || return 1
+    cp tools/mkimage "${TARGET_DIR}/${CROSS_PREFIX_DIR}/bin/mkimage" || return 1
 }
 
 main

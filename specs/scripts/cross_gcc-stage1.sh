@@ -11,14 +11,14 @@ src_prepare() {
 src_configure() {
     build_src_configure \
         --target="${CTARGET}" \
-        --prefix="/usr" \
-        --with-sysroot="${CROSS_ROOT_DIR}" \
+        --prefix="${CROSS_PREFIX_DIR}" \
+        --with-sysroot="${CROSS_SYSROOT_DIR}" \
         --without-headers --with-newlib --disable-shared \
         --disable-threads --disable-libssp --disable-libgomp \
         --disable-libmudflap --enable-languages=c \
-        --with-mpfr="${UBUILD_BUILD_DIR}/mpfr/usr" \
-        --with-gmp="${UBUILD_BUILD_DIR}/gmp/usr" \
-        --with-mpc="${UBUILD_BUILD_DIR}/mpc/usr" \
+        --with-mpfr="${CROSS_TOOLS_DIR}/usr" \
+        --with-gmp="${CROSS_TOOLS_DIR}/usr" \
+        --with-mpc="${CROSS_TOOLS_DIR}/usr" \
         ${GCC_CONFIGURE_ARGS}
 }
 

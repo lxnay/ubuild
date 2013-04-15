@@ -3,9 +3,9 @@
 . build.include
 
 src_configure() {
-    build_src_configure --prefix="/usr" --enable-shared \
-        --with-gmp="${UBUILD_BUILD_DIR}/gmp/usr" \
-        --with-mpfr="${UBUILD_BUILD_DIR}/mpfr/usr"
+    build_src_configure --prefix="${CROSS_PREFIX_DIR}" --enable-shared \
+        --with-gmp="${CROSS_TOOLS_DIR}/usr" \
+        --with-mpfr="${CROSS_TOOLS_DIR}/usr"
 }
 
 src_install() {
