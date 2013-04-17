@@ -64,9 +64,9 @@ cleanup_loopbacks() {
         rmdir "${boot_tmp_dir}" &> /dev/null;
     }
     sleep 1
-    [ -n "${boot_part}" ] && losetup -d "${boot_part}" 2> /dev/null
-    [ -n "${root_part}" ] && losetup -d "${root_part}" 2> /dev/null
-    [ -n "${DRIVE}" ] && losetup -d "${DRIVE}" 2> /dev/null
+    [ -n "${boot_part}" ] && ${PRIV_AGENT} /sbin/losetup -d "${boot_part}" 2> /dev/null
+    [ -n "${root_part}" ] && ${PRIV_AGENT} /sbin/losetup -d "${root_part}" 2> /dev/null
+    [ -n "${DRIVE}" ]     && ${PRIV_AGENT} /sbin/losetup -d "${DRIVE}" 2> /dev/null
 }
 trap "cleanup_loopbacks" 1 2 3 6 9 14 15 EXIT
 
@@ -74,7 +74,7 @@ trap "cleanup_loopbacks" 1 2 3 6 9 14 15 EXIT
 echo "Generating the empty image file at ${FILE}"
 dd if=/dev/zero of="${FILE}" bs=1024000 count="${SIZE}" || exit 1
 
-DRIVE=$(losetup -f "${FILE}" --show)
+DRIVE=$(${PRIV_AGENT} /sbin/losetup -f "${FILE}" --show)
 if [ -z "${DRIVE}" ]; then
     echo "Cannot execute losetup for ${FILE}" >&2
     exit 1
@@ -82,7 +82,7 @@ fi
 
 echo "Configured the loopback partition at ${DRIVE}"
 # Calculate size using fdisk
-SIZE=$(fdisk -l "${DRIVE}" | grep Disk | grep bytes | awk '{print $5}')
+SIZE=$(${PRIV_AGENT} /sbin/fdisk -l "${DRIVE}" | grep Disk | grep bytes | awk '{print $5}')
 CYLINDERS=$((SIZE/255/63/512))
 # Magic first partition size, given 9 cylinders below
 MAGICSIZE="73995264"
@@ -99,12 +99,12 @@ echo "Start offset : ${STARTOFFSET} bytes"
 {
 echo ,9,${BOOT_PART_TYPE_MBR},*
 echo ,,,-
-} | sfdisk -D -H 255 -S 63 -C ${CYLINDERS} ${DRIVE}
+} | ${PRIV_AGENT} /sbin/sfdisk -D -H 255 -S 63 -C ${CYLINDERS} ${DRIVE}
 
 sleep 2
 
 # The second partiton will start at block 144585, get the end block
-ENDBLOCK=$(fdisk -l "${DRIVE}" | grep "${DRIVE}p2" | awk '{print $3}')
+ENDBLOCK=$(${PRIV_AGENT} /sbin/fdisk -l "${DRIVE}" | grep "${DRIVE}p2" | awk '{print $3}')
 EXTSIZE=$(((ENDBLOCK - 144585) * 512))
 # Get other two loopback devices first
 EXTOFFSET=$((STARTOFFSET + MAGICSIZE))
@@ -113,14 +113,14 @@ echo "Root part size   : ${EXTSIZE} bytes"
 echo "Root part offset : ${EXTOFFSET} bytes"
 
 # Get other two loopback devices first
-boot_part=$(losetup -f --offset "${STARTOFFSET}" \
+boot_part=$(${PRIV_AGENT} /sbin/losetup -f --offset "${STARTOFFSET}" \
     --sizelimit "${MAGICSIZE}" "${FILE}" --show)
 if [ -z "${boot_part}" ]; then
     echo "Cannot setup the boot partition loopback" >&2
     exit 1
 fi
 
-root_part=$(losetup -f --offset "${EXTOFFSET}" \
+root_part=$(${PRIV_AGENT} /sbin/losetup -f --offset "${EXTOFFSET}" \
     --sizelimit "${EXTSIZE}" "${FILE}" --show)
 if [ -z "${root_part}" ]; then
     echo "Cannot setup the ${ROOT_PART_TYPE} partition loopback" >&2
@@ -132,11 +132,11 @@ echo "Root Partition at : ${root_part}"
 
 # Format boot
 echo "Formatting ${BOOT_PART_TYPE} ${boot_part}..."
-"mkfs.${BOOT_PART_TYPE}" ${BOOT_PART_MKFS_ARGS} "${boot_part}" || exit 1
+${PRIV_AGENT} "/sbin/mkfs.${BOOT_PART_TYPE}" ${BOOT_PART_MKFS_ARGS} "${boot_part}" || exit 1
 
 # Format extfs
 echo "Formatting ${ROOT_PART_TYPE} ${root_part}..."
-"mkfs.${ROOT_PART_TYPE}" ${ROOT_PART_MKFS_ARGS} "${root_part}" || exit 1
+${PRIV_AGENT} "/sbin/mkfs.${ROOT_PART_TYPE}" ${ROOT_PART_MKFS_ARGS} "${root_part}" || exit 1
 
 boot_tmp_dir=$(mktemp -d --suffix=boot.mount)
 if [ -z "${boot_tmp_dir}" ]; then
@@ -157,12 +157,12 @@ sync
 echo "Setting up the boot directory content, mounting on ${boot_tmp_dir}"
 ${PRIV_AGENT} mount "${boot_part}" "${boot_tmp_dir}"
 for item in "MLO" "uEnv.txt" "${UBOOT_IMAGE_NAME}"; do
-    cp "${BOOT_DIR}/${item}" "${boot_tmp_dir}"/ || exit 1
+    ${PRIV_AGENT} cp "${BOOT_DIR}/${item}" "${boot_tmp_dir}"/ || exit 1
 done
 
 echo "Setting up the root partition directory content, mounting on ${tmp_dir}"
 ${PRIV_AGENT} mount "${root_part}" "${tmp_dir}"
-rsync -a -v -x -H -A -X "${WORK_ROOTFS_DIR}"/ "${tmp_dir}"/ || exit 1
+${PRIV_AGENT} rsync -a -v -x -H -A -X "${WORK_ROOTFS_DIR}"/ "${tmp_dir}"/ || exit 1
 
 ${PRIV_AGENT} umount "${boot_tmp_dir}" || exit 1
 ${PRIV_AGENT} umount "${tmp_dir}" || exit 1
