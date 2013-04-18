@@ -23,7 +23,7 @@ src_configure() {
         --disable-profile --without-gd \
         --without-cvs --disable-multi-arch \
         --enable-obsolete-rpc --enable-kernel=2.6.9 \
-        --enable-add-ons="nptl,libidn,${UBUILD_BUILD_DIR}/glibc-ports"
+        --enable-add-ons="nptl,libidn,${CROSS_ROOT_DIR}${CROSS_PREFIX_DIR}/src/glibc-ports"
 }
 
 src_install() {

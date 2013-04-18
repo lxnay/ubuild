@@ -23,7 +23,7 @@ src_configure() {
         --host="${CTARGET}" \
         --disable-profile \
         --without-gd --without-cvs \
-        --enable-add-ons="${S}/nptl,${UBUILD_BUILD_DIR}/glibc-ports"
+        --enable-add-ons="${S}/nptl,${CROSS_ROOT_DIR}${CROSS_PREFIX_DIR}/src/glibc-ports"
 }
 
 src_compile() {
