@@ -8,5 +8,5 @@ build_dir = /var/tmp/ubuild.beaglebone-armhf.build_dir
 compile_dir = /var/tmp/ubuild.beaglebone-armhf.compile_dir
 cache_dir = beaglebone.armhf.cache/
 image_name = armv7l.hardfp.BeagleBone.img.xz
-env = scripts/armhf/env
-cross_env = scripts/armhf/cross_env
+env = architecture_env/armhf/env
+cross_env = architecture_env/armhf/cross_env

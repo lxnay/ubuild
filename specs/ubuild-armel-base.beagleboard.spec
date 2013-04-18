@@ -8,5 +8,5 @@ build_dir = /var/tmp/ubuild.beagleboard-armel.build_dir
 compile_dir = /var/tmp/ubuild.beagleboard-armel.compile_dir
 cache_dir = beagleboard.armel.cache/
 image_name = armv7l.softfp.BeagleBoard.img.xz
-env = scripts/armel/env
-cross_env = scripts/armel/cross_env
+env = architecture_env/armel/env
+cross_env = architecture_env/armel/cross_env
