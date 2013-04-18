@@ -303,6 +303,7 @@ class SpecParser(_SpecParser):
     initramfs_rootfs_dir = some/other/path
     cache_dir = some/other/path
     build_dir = some/foo
+    compile_dir = some/other/foo
     destination_dir = some/dir
     sources_dir = some/sources
     image_name = Some_name
@@ -370,6 +371,7 @@ class SpecParser(_SpecParser):
                 "build_dir": self._mangle_create_directory,
                 "cache_dir": self._mangle_create_directory,
                 "cache_vars": self._mangle_cache_vars,
+                "compile_dir": self._mangle_create_directory,
                 "cross_env": self._mangle_file,
                 "cross_post": self._mangle_argv0_executable,
                 "cross_pre": self._mangle_argv0_executable,
@@ -399,6 +401,7 @@ class SpecParser(_SpecParser):
                 "build_dir": 1,
                 "build_image": 1,
                 "cache_dir": 1,
+                "compile_dir": 1,
                 "destination_dir": 1,
                 "image_name": 1,
                 "initramfs_rootfs_dir": 1,
@@ -705,6 +708,12 @@ class SpecParser(_SpecParser):
         """
         return self.ubuild()["cache_dir"][0]
 
+    def compile_dir(self):
+        """
+        Return the compile_dir metadata value.
+        """
+        return self.ubuild()["compile_dir"][0]
+
     def destination_dir(self):
         """
         Return the destination_dir metadata value.
@@ -967,6 +976,7 @@ class Ubuild(object):
         env_keys = (
             ("UBUILD_SPEC_PATH", "path"),
             ("UBUILD_BUILD_DIR", "build_dir"),
+            ("UBUILD_COMPILE_DIR", "compile_dir"),
             ("UBUILD_INITRAMFS_ROOTFS_DIR", "initramfs_rootfs_dir"),
             ("UBUILD_ROOTFS_DIR", "rootfs_dir"),
             ("UBUILD_SOURCES_DIR", "sources_dir"),

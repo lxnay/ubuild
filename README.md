@@ -118,62 +118,68 @@ supported by the ubuild:
   CFLAGS, ...
 
   6.  **build_dir**: the directory in where the build process will take
-  place, all the temporary data and build-related binaries (such as the
-  cross compiler) will be placed there. Must be defined, if the
-  directory is not found, it will be created. Exported as environment
-  variable: UBUILD\_BUILD\_DIR. This is passed to {cross\_,}build\_pkg
-  arguments appending an extra sub-directory as the UBUILD\_IMAGE\_DIR,
-  any {cross\_,}build\_pkg script is expected to copy the compiled files
-  there as well to make the transparent build caching system work.
+  place, all the ubuild targets will be placed there after compilation.
+  Must be defined, if the directory is not found, it will be created.
+  Exported as environment variable: UBUILD\_BUILD\_DIR. This is passed
+  to {cross\_,}build\_pkg arguments appending an extra sub-directory as
+  the UBUILD\_IMAGE\_DIR, any {cross\_,}build\_pkg script is expected to
+  copy the compiled files there as well to make the transparent build
+  caching system work.
 
-  7.  **destination_dir**: destination directory in where the final
+  6.  **compile_dir**: the directory in where the build process will take
+  place. This is separate from build_dir so that it can be placed on faster
+  temporary filesystems such as tmpfs. Must be defined, if the directory
+  is not found, it will be created. Exported as environment variable:
+  UBUILD\_COMPILE\_DIR.
+
+  8.  **destination_dir**: destination directory in where the final
   system image will be placed. Must be defined, if the directory is not
   found, it will be created. Exported as environment variable:
   UBUILD\_DESTINATION\_DIR.
 
-  8.  **cross_pre**: a path pointing to a script (including its
+  9.  **cross_pre**: a path pointing to a script (including its
   arguments) that will be always executed before starting the build
   process of the cross compiler targets is complete (even in case of
   build cache hits!). All the environment variables exported in
   cross_env will be passed. The executable must return a zero exit
   status or the ubuild execution will be aborted.
 
-  9.  **cross_post**: a path pointing to a script (including its
+  10. **cross_post**: a path pointing to a script (including its
   arguments) that will be always executed after the build process of the
   cross compiler targets is complete (even in case of build cache
   hits!). All the environment variables exported in cross_env will be
   passed. The executable must return a zero exit status or the ubuild
   execution will be aborted.
 
-  10. **pre**: a path pointing to a script (including its arguments)
+  11. **pre**: a path pointing to a script (including its arguments)
   that will be always executed before starting the build process of the
   non-cross compiler targets is complete (even in case of build cache
   hits!). All the environment variables exported in env will be
   passed. The executable must return a zero exit status or the ubuild
   execution will be aborted.
 
-  11. **post**: a path pointing to a script (including its arguments)
+  12. **post**: a path pointing to a script (including its arguments)
   that will be always executed after the build process of the non-cross
   compiler targets is complete (even in case of build cache hits!). All
   the environment variables exported in env will be passed. The
   executable must return a zero exit status or the ubuild execution will
   be aborted.
 
-  12. **cross_env**: a file containing environment variable (that must
+  13. **cross_env**: a file containing environment variable (that must
   be exported) that is sourced by ubuild for build cache validation of
   [cross=] section targets (changing variable values there may trigger a
   rebuild depending on the cache_vars value). Can be defined multiple
   times. These variables will be part of the environment passed to the
   [cross=] section build scripts.
 
-  13. **env**: a file containing environment variable (that must be
+  14. **env**: a file containing environment variable (that must be
   exported) that is sourced by ubuild for build cache validation of
   [pkg=] section targets (changing variable values there may trigger a
   rebuild depending on the cache_vars value). Can be defined multiple
   times. These variables will be part of the environment passed to the
   [pkg=] section build scripts.
 
-  14. **image_name**: name of the final system image. Must be
+  15. **image_name**: name of the final system image. Must be
   defined. Exported as environment variable: UBUILD\_IMAGE\_NAME.
 
 

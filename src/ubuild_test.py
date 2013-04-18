@@ -127,6 +127,7 @@ class UbuildSpecTest(unittest.TestCase):
 
 [ubuild]
 build_dir = %(dir)s
+compile_dir = %(dir)s
 build_image = %(script)s argA argB
 cache_dir = %(dir)s
 cache_vars = ARCH ABI GMPABI CROSS_SYSROOT
@@ -249,6 +250,7 @@ url = http://www.kernel.org/pub/linux/kernel/v3.x/linux-3.7.10.tar.xz
                     ["%(script)s", "argA", "argB"]
                 ],
                 "build_dir": ["%(dir)s"],
+                "compile_dir": ["%(dir)s"],
                 "cache_dir": ["%(dir)s"],
                 "env": ["%(env)s"],
                 "destination_dir": ["%(dir)s"]
@@ -451,7 +453,7 @@ url = http://www.kernel.org/pub/linux/kernel/v3.x/linux-3.7.10.tar.xz
         self.assertEqual(parser.ubuild(), parser["ubuild"])
 
         test_meta = [
-            "build_dir", "build_image", "cache_dir",
+            "build_dir", "compile_dir", "build_image", "cache_dir",
             "destination_dir", "image_name", "rootfs_dir",
             "sources_dir"
         ]

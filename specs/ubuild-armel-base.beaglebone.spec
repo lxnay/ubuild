@@ -5,6 +5,7 @@
 
 [ubuild]
 build_dir = /var/tmp/ubuild.beaglebone-armel.build_dir
+compile_dir = /var/tmp/ubuild.beaglebone-armel.compile_dir
 cache_dir = beaglebone.armel.cache/
 image_name = armv7l.softfp.BeagleBone.img.xz
 env = scripts/armel/env

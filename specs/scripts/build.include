@@ -295,12 +295,11 @@ bmake() {
 # built-in build_<phase>.
 # @USAGE: main
 main() {
-    WORKDIR=$(TMPDIR="${UBUILD_BUILD_DIR}" mktemp -d \
-        --suffix="${UBUILD_TARBALL_NAME}")
-    if [ ! -d "${WORKDIR}" ]; then
-        echo "Cannot create a temporary build dir ${WORKDIR}" >&2
-        exit 1
-    fi
+    # "unknown_target" makes impossible for WORKDIR to be "/"
+    local target_name="${UBUILD_TARGET_NAME/=/.}"
+    WORKDIR="${UBUILD_COMPILE_DIR}/${target_name:-unknown_target}"
+    rm -rf "${WORKDIR}" 2>/dev/null
+    mkdir -p "${WORKDIR}" || exit 1
 
     S="${WORKDIR}/${UBUILD_SOURCES}"
     BUILD_DIR="${WORKDIR}/build"
@@ -311,6 +310,7 @@ main() {
     echo
     echo "Ubuild environment variables:"
     echo "UBUILD_BUILD_DIR: ${UBUILD_BUILD_DIR}"
+    echo "UBUILD_COMPILE_DIR: ${UBUILD_COMPILE_DIR}"
     echo "UBUILD_IMAGE_DIR: ${UBUILD_IMAGE_DIR}"
     echo "UBUILD_SOURCES_DIR: ${UBUILD_SOURCES_DIR}"
     echo "UBUILD_SOURCES: ${UBUILD_SOURCES}"
@@ -347,7 +347,7 @@ main() {
         return 0
     else
         echo
-        echo "Build failure of ${UBUILD_TARBALL_NAME}" >&2
+        echo "Build failure of ${UBUILD_TARGET_NAME}" >&2
         echo "The work directory is: ${WORKDIR}" >&2
         echo "Have fun." >&2
         echo
