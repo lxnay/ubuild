@@ -8,8 +8,8 @@
 
 . build.include || exit 1
 
-export LC_ALL=en_US.UTF-8
-export PATH="${PATH}:/usr/sbin"
+export LC_ALL=C
+export PATH="${PATH}:/usr/sbin:/sbin"
 export TMPDIR="${UBUILD_BUILD_DIR}"
 
 # Boot partition type
