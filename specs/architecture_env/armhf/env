@@ -8,7 +8,7 @@ ABI="gnueabi"
 CTARGET="armv7a-hardfloat-linux-${ABI}"
 export ARCH ABI CTARGET
 
-CFLAGS="-O2 -pipe -march=armv7-a -mfpu=vfpv3-d16 -mfloat-abi=hard"
+CFLAGS="-O2 -pipe -march=armv7-a -mfpu=neon -mfloat-abi=hard"
 CXXFLAGS="${CXXFLAGS}"
 LDFLAGS="-Wl,-O1 -Wl,--as-needed"
 
