@@ -49,6 +49,8 @@ src_install() {
         cp "${ex}" "${bench_dir}/${n}" || return 1
         chmod +x "${bench_dir}/${n}" || return 1
     done
+    # copy the .pcm files
+    cp "${S}"/*.pcm "${bench_dir}/" || return 1
 }
 
 main
