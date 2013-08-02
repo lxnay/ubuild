@@ -3,9 +3,9 @@
 . build.include
 . toolchain.include
 
-# @DESCRIPTION: bmake wrapper for the Linux kernel build system calls. It
+# @DESCRIPTION: bmake wrapper for the BusyBox build system calls. It
 # automatically appends the cross compiler options.
-# @USAGE: xkmake [ærgs]
+# @USAGE: xbbmake [args]
 xbbmake() {
     bmake -C "${S}" ARCH="${ARCH}" CROSS_COMPILE="${CTARGET}-" \
         O="${BUILD_DIR}" DESTDIR="${TARGET_DIR}" "${@}"
