@@ -47,12 +47,14 @@ class SpecPreprocessor(object):
             self.PREFIX + "include": self._include_expander,
         }
 
-    def _recursive_expand(self, line):
+    def _recursive_expand(self, line, directory_path):
         """
         Expand supported preprocessor statements recursively.
 
         Args:
           line: line to parse and expand, if needed.
+          directory_path: directory where the file containing line
+              is read from.
 
         Returns:
           the expanded line.
@@ -62,18 +64,20 @@ class SpecPreprocessor(object):
             expander = self._expanders.get(split_line[0])
             if expander is not None:
                 try:
-                    line = expander(line)
+                    line = expander(line, directory_path)
                 except RuntimeError as err:
                     raise SpecPreprocessor.PreprocessorError(
                         "invalid preprocessor line: %s" % (err,))
         return line
 
-    def _include_expander(self, line):
+    def _include_expander(self, line, directory_path):
         """
         Expand, recursively, an #include <path> statement.
 
         Args:
           line: line to parse and expand, if needed.
+          directory_path: directory where the file containing line
+              is read from.
 
         Returns:
           the expanded line.
@@ -86,18 +90,18 @@ class SpecPreprocessor(object):
             # absolute path
             path = rest_line
         else:
-            path = os.path.join(os.path.dirname(self._spec_path),
-                rest_line)
+            path = os.path.join(directory_path, rest_line)
 
         if not (os.path.isfile(path) and os.access(path, os.R_OK)):
             raise SpecPreprocessor.PreprocessorError(
                 "invalid preprocessor line: %s" % (line,))
 
         with codecs.open(path, "r", encoding=self._encoding) as spec_f:
+            directory_path_new = os.path.dirname(path)
             lines = None
             for line in spec_f.readlines():
                 # call recursively
-                line = self._recursive_expand(line)
+                line = self._recursive_expand(line, directory_path_new)
                 if lines is None:
                     lines = line
                 else:
@@ -113,10 +117,11 @@ class SpecPreprocessor(object):
           the parsed file content string.
         """
         content = []
+        directory_path = os.path.dirname(self._spec_path)
         with codecs.open(self._spec_path, "r",
                          encoding=self._encoding) as spec_f:
             for line in spec_f.readlines():
-                line = self._recursive_expand(line)
+                line = self._recursive_expand(line, directory_path)
                 content.append(line)
 
         final_content = []
@@ -125,7 +130,7 @@ class SpecPreprocessor(object):
             if split_line:
                 expander = self._expanders.get(split_line[0])
                 if expander is not None:
-                    line = expander(line)
+                    line = expander(line, directory_path)
             final_content.append(line)
 
         return ("".join(final_content)).split("\n")
