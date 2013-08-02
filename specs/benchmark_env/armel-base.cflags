@@ -1,0 +1,5 @@
+armhf-base: -O2 -pipe -march=armv7-a -mfpu=vfp -mfloat-abi=softfp
+armhf-base+neon: -O2 -pipe -march=armv7-a -mfpu=neon -mfloat-abi=softfp
+armhf-base+neon+tree-vectorize: -O2 -pipe -march=armv7-a -mfpu=neon -ftree-vectorize -mfloat-abi=softfp
+armhf+gcc-O3+neon+cortex-a8: -O3 -pipe -march=armv7-a -mcpu=cortex-a8 -mfpu=neon -mfloat-abi=softfp
+armhf+gcc-O3+neon: -O3 -pipe -march=armv7-a -mfpu=neon -mfloat-abi=softfp

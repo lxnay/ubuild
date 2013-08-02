@@ -1,0 +1,8 @@
+#!/bin/bash
+
+_SPEC_DIR=$(dirname "${UBUILD_SPEC_PATH}")
+
+BENCHMARK_CFLAGS_CONFIG="${_SPEC_DIR}/benchmark_env/armhf-base.cflags"
+BENCHMARK_CFLAGS_MD5=$(md5sum "${BENCHMARK_CFLAGS_CONFIG}")
+
+export BENCHMARK_CFLAGS_CONFIG BENCHMARK_CFLAGS_MD5

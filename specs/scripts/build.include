@@ -250,6 +250,7 @@ root_init() {
 work_rootfs_setup_environment() {
     if [ -z "${_WORK_ROOTFS_SETUP_ENVIRONMENT}" ]; then
         local libpath="${WORK_ROOTFS_DIR}/usr/lib"
+        export UBUILD_ORIGINAL_LD_LIBRARY_PATH="${LD_LIBRARY_PATH}"
         if [ -n "${LD_LIBRARY_PATH}" ]; then
             export LD_LIBRARY_PATH="${libpath}:${LD_LIBRARY_PATH}"
         else
@@ -257,12 +258,24 @@ work_rootfs_setup_environment() {
         fi
 
         local path="${WORK_ROOTFS_DIR}/usr/bin"
+        export UBUILD_ORIGINAL_PATH="${PATH}"
         export PATH="${path}:${PATH}"
 
         _WORK_ROOTFS_SETUP_ENVIRONMENT=1
     fi
 }
 
+# @DESCRIPTION: unset the build time and runtime environment
+# of the cross compiler compiling sources for the target root filesystem.
+# @USAGE: work_rootfs_unset_environment
+work_rootfs_unset_environment() {
+    if [ "${_WORK_ROOTFS_SETUP_ENVIRONMENT}" = "1" ]; then
+        export PATH="${UBUILD_ORIGINAL_PATH}"
+        export LD_LIBRARY_PATH="${UBUILD_ORIGINAL_LD_LIBRARY_PATH}"
+
+        unset _WORK_ROOTFS_SETUP_ENVIRONMENT
+    fi
+}
 
 # Export all the public functions without the build_* prefix.
 for _func in $(compgen -A function); do
