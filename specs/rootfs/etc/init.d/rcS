@@ -31,7 +31,7 @@ add_user(){
   ID=$(echo $(ls -ld /etc) | cut -d ' ' -f 3)
   echo -n "${BLUE}Adding user ${YELLOW} $1 ($ID) ${NORMAL}"
   /bin/adduser -s /bin/sh -G staff -u $ID -D "$USER" > /dev/null
-  echo "$1":$2 | /sbin/chpasswd -m > /dev/null
+  echo "$1":$2 | /usr/sbin/chpasswd -m > /dev/null
   echo -e "$1\tALL=NOPASSWD: ALL" >> /etc/sudoers
   setup_home
   echo "${GREEN}Done.${NORMAL}"
@@ -197,8 +197,16 @@ fi
 /sbin/ifconfig lo 127.0.0.1 up
 /sbin/route add 127.0.0.1 lo &
 
-chown root:root /bin/busybox /bin/sudo /etc/sudoers
-chmod u+s  /bin/busybox /bin/sudo
+for f in /bin/busybox /bin/sudo; do
+	if [ -e "${f}" ]; then
+		chown root:root "${f}"
+		chmod u+s "${f}"
+	fi
+done
+if [ -e /etc/sudoers ]; then
+	chown root:root /etc/sudoers
+	chmod u+s /etc/sudoers
+fi
 
 touch /var/tmp/k5_skip
 
@@ -239,8 +247,9 @@ fi
 chmod a+rw /dev/null
 chmod a+rw /dev/zero
 
-/opt/bootlocal.sh
-sleep 5
+if [ -x /opt/bootlocal.sh ]; then
+	/opt/bootlocal.sh
+fi
 
 [ -n "$NOAUTOLOGIN" ] && echo "booting" > /etc/sysconfig/noautologin
 
