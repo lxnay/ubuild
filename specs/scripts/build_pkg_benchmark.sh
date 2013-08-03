@@ -51,6 +51,7 @@ src_install() {
     done
     # copy the .pcm files
     cp "${S}"/*.pcm "${bench_dir}/" || return 1
+    cp -rp "${S}/c100b16" "${bench_dir}/" || return 1
 }
 
 main
