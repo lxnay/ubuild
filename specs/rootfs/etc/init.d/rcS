@@ -208,6 +208,8 @@ if [ -e /etc/sudoers ]; then
 	chmod u+s /etc/sudoers
 fi
 
+echo root:root | /usr/sbin/chpasswd -m
+
 touch /var/tmp/k5_skip
 
 /sbin/ldconfig 2>/dev/null
@@ -250,6 +252,8 @@ chmod a+rw /dev/zero
 if [ -x /opt/bootlocal.sh ]; then
 	/opt/bootlocal.sh
 fi
+
+sleep 5
 
 [ -n "$NOAUTOLOGIN" ] && echo "booting" > /etc/sysconfig/noautologin
 
