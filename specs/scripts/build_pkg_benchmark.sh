@@ -25,6 +25,9 @@ src_compile() {
 
     local target cflags s oldifs
     while read s; do
+        if [ "${s}" = "--" ]; then
+            break
+        fi
         target="${s/:*}"
         cflags="${s/*:}"
         cflags="${cflags##*( )}"  # trim leading whitespaces
