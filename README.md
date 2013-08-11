@@ -113,7 +113,7 @@ supported by the ubuild:
   process. Exported as environment variable: UBUILD\_CACHE\_DIR. If no
   cache_dir is provided, the whole caching system will be disabled.
 
-  5.  **cache_vars**: a comma separated list of environment variables
+  5.  **cache_vars**: a space separated list of environment variables
   considered for cache_dir elements validation. For instance: LDFLAGS,
   CFLAGS, ...
 
